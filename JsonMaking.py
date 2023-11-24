@@ -114,7 +114,7 @@ class Game_NineMensMorris:
     # makes a random agent turn
     def agent_turn(self):
         if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
-            legal = self.flying_stage_moves
+            legal = self.flying_stage_moves(1)
             random_move = legal[rnd.randint(0, len(legal))]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
@@ -149,7 +149,7 @@ class Game_NineMensMorris:
     # makes a random opponent turn
     def opp_turn(self):
         if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
-            legal = self.flying_stage_moves
+            legal = self.flying_stage_moves(2)
             random_move = legal[rnd.randint(0, len(legal))]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
