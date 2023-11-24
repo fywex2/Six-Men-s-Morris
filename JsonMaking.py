@@ -92,13 +92,13 @@ class Game_NineMensMorris:
                 count += 1
 
         if player == 1:
-            self.white_mills = count
             if count > self.white_mills:
+                self.white_mills = count
                 return True
 
         if player == 2:
-            self.black_mills = count
             if count > self.black_mills:
+                self.black_mills = count
                 return True
 
         return False
@@ -115,18 +115,27 @@ class Game_NineMensMorris:
     def agent_turn(self):
         if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
             legal = self.flying_stage_moves(1)
-            random_move = legal[rnd.randint(0, len(legal))]
+            if len(legal) < 2:
+                random_move = legal[0]
+            else:
+                random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
             return
         if self.opp_pieces_not_placed == 0:
             legal = self.legal_places_after(1)
-            random_move = legal[rnd.randint(0, len(legal))]
+            if len(legal) < 2:
+                random_move = legal[0]
+            else:
+                random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
             return
         legal = self.legal_places_before()
-        random_move = legal[rnd.randint(0,len(legal))]
+        if len(legal) < 2:
+            random_move = legal[0]
+        else:
+            random_move = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_move[0]][random_move[1]] = 1
         self.agent_pieces_not_placed -= 1
         if self.check_new_mills(1):
@@ -134,15 +143,21 @@ class Game_NineMensMorris:
 
     # remove random opponent's piece
     def remove_opp_piece(self):
-        white_places = self.white_places()
-        random_remove = white_places[rnd.randint(0, len(white_places))]
+        legal = self.white_places()
+        if len(legal) < 2:
+            random_remove = legal[0]
+        else:
+            random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.opp_pieces -= 1
 
     # remove random agent's piece
     def remove_agent_piece(self):
-        black_places = self.black_places()
-        random_remove = black_places[rnd.randint(0, len(black_places))]
+        legal = self.black_places()
+        if len(legal) < 2:
+            random_remove = legal[0]
+        else:
+            random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
 
@@ -150,21 +165,27 @@ class Game_NineMensMorris:
     def opp_turn(self):
         if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
             legal = self.flying_stage_moves(2)
-            random_move = legal[rnd.randint(0, len(legal))]
+            random_move = legal[rnd.randint(0, len(legal)-1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
             return
         if self.opp_pieces_not_placed == 0:
             legal = self.legal_places_after(2)
-            random_move = legal[rnd.randint(0, len(legal))]
+            if len(legal) < 2:
+                random_move = legal[0]
+            else:
+                random_move = legal[rnd.randint(0, len(legal)-1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
             return
         legal = self.legal_places_before()
-        random_move = legal[rnd.randint(0,len(legal))]
+        if len(legal) < 2:
+            random_move = legal[0]
+        else:
+            random_move = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_move[0]][random_move[1]] = 2
         self.opp_pieces_not_placed -= 1
-        if self.check_new_mills(1):
+        if self.check_new_mills(2):
             self.remove_opp_piece()
 
 class Games:
@@ -178,6 +199,8 @@ class Games:
     def single_game(self):
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
+            if self.nmm.check_winner() != 0:
+                break
             self.nmm.opp_turn()
         return self.nmm.check_winner()
 
@@ -189,6 +212,7 @@ class Games:
                 self.white_wins += 1
             elif game_result == 2:
                 self.black_wins += 1
+            self.nmm = Game_NineMensMorris()
 
 
 ninemensmorris = Games()
