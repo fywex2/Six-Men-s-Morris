@@ -33,7 +33,7 @@ class game_NineMensMorris:
         self.states = []
         self.statesBoards = []
 
-    # returns a tuple of where pieces could be placed
+    # returns a list of where pieces could be placed
     def legal_places_before(self):
         tupple_list = []
         for i in range(7):
@@ -42,7 +42,7 @@ class game_NineMensMorris:
                     tupple_list.append((i, j))
         return tupple_list
 
-    # returns a tuple of where pieces could be moved to after all of the pieces of the player where put on the board
+    # returns a list of where pieces could be moved to after all of the pieces of the player where put on the board
     def legal_places_after(self, player):
         moves = []
 
@@ -57,11 +57,19 @@ class game_NineMensMorris:
 
         return moves
 
-    def legal_less3(self, player):
+    # returns a list of where pieces could be moved when there are 3 pieces left on the board (flying stage)
+    def flying_stage_moves(board, player):
         moves = []
-        
 
+        for i in range(7):
+            for j in range(7):
+                if board[i][j] == player:
+                    for x in range(7):
+                        for y in range(7):
+                            if board[x][y] == 0 and (i == x or j == y or abs(i - x) == abs(j - y)):
+                                moves.append(((i, j), (x, y)))
 
+        return moves
 
     # returns a list of where the white pieces are on the board
     def white_places(self):
@@ -111,6 +119,12 @@ class game_NineMensMorris:
 
     # makes a random agent turn
     def agent_turn(self):
+        if self.opp_pieces == 3 and self.opp_pieces_notplaced == 0:
+            legal = self.flying_stage_moves(1)
+            random_move = legal[rnd.randint(0, len(legal))]
+            self.board[random_move[0][0]][random_move[0][1]] = 0
+            self.board[random_move[1][0]][random_move[1][1]] = 1
+            return
         if self.opp_pieces_notplaced == 0:
             legal = self.legal_places_after(1)
             random_move = legal[rnd.randint(0, len(legal))]
@@ -134,26 +148,29 @@ class game_NineMensMorris:
     def remove_agent_piece(self):
         black_places = self.black_places()
         random_remove = black_places[rnd.randint(0, len(black_places))]
-        print(random_remove)
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
 
     # makes a random opponent turn
     def opp_turn(self):
+        if self.opp_pieces == 3 and self.opp_pieces_notplaced == 0:
+            legal = self.flying_stage_moves(2)
+            random_move = legal[rnd.randint(0, len(legal))]
+            self.board[random_move[0][0]][random_move[0][1]] = 0
+            self.board[random_move[1][0]][random_move[1][1]] = 2
+            return
         if self.opp_pieces_notplaced == 0:
             legal = self.legal_places_after(2)
             random_move = legal[rnd.randint(0, len(legal))]
-            print(random_move)
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
             return
         legal = self.legal_places_before()
         random_move = legal[rnd.randint(0,len(legal))]
-        print(random_move)
         self.board[random_move[0]][random_move[1]] = 2
         self.opp_pieces_notplaced -= 1
 
 nmm = game_NineMensMorris()
 print(nmm.board)
-print(nmm.agent_turn())
+nmm.agent_turn()
 print(nmm.board)
