@@ -44,7 +44,7 @@ class Game_NineMensMorris:
                     adjacent_positions = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
 
                     for adj_i, adj_j in adjacent_positions:
-                        if 0 <= adj_i < 7 and 0 <= adj_j < 7 and self.board[adj_i, adj_j] == 0:
+                        if (0 <= adj_i < 7) and (0 <= adj_j < 7) and self.board[adj_i, adj_j] == 0:
                             moves.append(((i, j), (adj_i, adj_j)))
 
         return moves
