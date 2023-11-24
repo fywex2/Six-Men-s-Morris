@@ -33,12 +33,12 @@ class Game_NineMensMorris:
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
-        move_list = []
+        moves_list = []
         for i in range(7):
             for j in range(7):
                 if self.board[i][j] == 0:
-                    move_list.append((i, j))
-        return move_list
+                    moves_list.append((i, j))
+        return moves_list
 
     # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
     def legal_places_after(self, player):
@@ -55,15 +55,15 @@ class Game_NineMensMorris:
 
     # returns a list of where pieces could be moved when there are 3 pieces left on the board (flying stage)
     def flying_stage_moves(self, player):
-        moves = []
+        moves_list = []
         for i in range(7):
             for j in range(7):
                 if self.board[i][j] == player:
                     for x in range(7):
                         for y in range(7):
                             if self.board[x][y] == 0 and (i == x or j == y or abs(i - x) == abs(j - y)):
-                                moves.append(((i, j), (x, y)))
-        return moves
+                                moves_list.append(((i, j), (x, y)))
+        return moves_list
 
     # returns a list of where the white pieces are on the board
     def white_places(self):
@@ -92,12 +92,12 @@ class Game_NineMensMorris:
             if self.board[0, i] == self.board[1, i] == self.board[2, i] == player:
                 count += 1
         if player == 1:
+            self.white_mills = count
             if count > self.white_mills:
-                self.white_mills = count
                 return True
         if player == 2:
+            self.black_mills = count
             if count > self.black_mills:
-                self.black_mills = count
                 return True
         return False
 
@@ -175,7 +175,7 @@ class Game_NineMensMorris:
             if len(legal) < 2:
                 random_move = legal[0]
             else:
-                random_move = legal[rnd.randint(0, len(legal)-1)]
+                random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
             return
@@ -216,7 +216,7 @@ class Games:
             self.nmm = Game_NineMensMorris()
 
 
-ninemensmorris = Games()
-ninemensmorris.multiply_games()
-print("Wins for white:", ninemensmorris.white_wins)
-print("Wins for black:", ninemensmorris.black_wins)
+run_games = Games()
+run_games.multiply_games()
+print("Wins for white:", run_games.white_wins)
+print("Wins for black:", run_games.black_wins)
