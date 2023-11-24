@@ -187,7 +187,7 @@ class Game_NineMensMorris:
         self.board[random_move[0]][random_move[1]] = 2
         self.opp_pieces_not_placed -= 1
         if self.check_new_mills(2):
-            self.remove_opp_piece()
+            self.remove_agent_piece()
 
 class Games:
     def __init__(self):
