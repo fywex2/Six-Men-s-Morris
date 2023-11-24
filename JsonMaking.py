@@ -18,13 +18,12 @@ class game_NineMensMorris:
             [-1, 0, -1, 0, -1, 0, -1],
             [0, -1, -1, 0, -1, -1, 0]
             ], dtype=np.int8)
-        self.agent_pieces = 9
-        self.opp_pieces = 9
-        self.agent_pieces_notplaced = 9
-        self.opp_pieces_notplaced = 9
-        self.white_mills = 0
-        self.black_mills = 0
-        self.won = 0
+        self.agent_pieces = 9 # the amount of total pieces of the agent
+        self.opp_pieces = 9 # the amount of total pieces of the opponent
+        self.agent_pieces_notplaced = 9 # the amount of pieces that wasn't place on the board of the agent
+        self.opp_pieces_notplaced = 9 # the amount of pieces that wasn't place on the board of the opponent
+        self.white_mills = 0 # white mills on the board
+        self.black_mills = 0 # black mills on the board
         self.win_points_agent = 1  # it is recommended to give 1 or 10
         self.tie_points = 0.5  # smaller from win points
         self.loss_points_agent = 0
@@ -101,20 +100,22 @@ class game_NineMensMorris:
                     (self.board[0, i] == self.board[1, i] == self.board[2, i] == player):
                 count += 1
 
-        if player == 1 and count > self.white_mills:
+        if player == 1:
             self.white_mills = count
-            return True
+            if count > self.white_mills:
+                return True
 
-        if player == 2 and count > self.black_mills:
+        if player == 2:
             self.black_mills = count
-            return True
+            if count > self.black_mills:
+                return True
 
     # return true if the parameter player have won and false else
     def check_winner(self, player):
         if player == 1 and (not self.legal_places_after(1) or self.agent_pieces < 3):
-            return True
+            return 1
         if player == 2 and (not self.legal_places_after(2) or self.opp_pieces < 3):
-            return True
+            return 2
         return 0
 
     # makes a random agent turn
@@ -169,6 +170,31 @@ class game_NineMensMorris:
         random_move = legal[rnd.randint(0,len(legal))]
         self.board[random_move[0]][random_move[1]] = 2
         self.opp_pieces_notplaced -= 1
+
+class games:
+
+    def __init__(self):
+        self.nmm = game_NineMensMorris() # object of the nine men's morris
+        self.amount_games = 1 # amount of games to run
+        self.white_wins = 0 # amount of wins for white
+        self.black_wins = 0 # amount of wins for black
+
+    # play a single game of nine men's morris
+    def single_game(self):
+        while nmm.check_winner() == 0:
+            nmm.agent_turn()
+            nmm.opp_turn()
+        return nmm.check_winner()
+
+    # run a loop of the specified amount of games
+    def multipyle_games(self):
+        game_result = self.single_game()
+        for i in range(self.amount_games):
+            if game_result == 1:
+                self.white_wins += 1
+            if game_result == 2:
+                self.black_wins += 1
+
 
 nmm = game_NineMensMorris()
 print(nmm.board)
