@@ -7,7 +7,7 @@ creating the board itself when empty by 7x7 numpy array
 1 will be the white pieces that will be starting first, that can only be placed on places with the value of 0,
 2 will be the black pieces that will be starting second, that can only be placed on places with the value of 0)
 """
-class game_NineMensMorris:
+class Game_NineMensMorris:
     def __init__(self):
         self.board = np.array([
             [0, -1, -1, 0, -1, -1, 0],
@@ -105,9 +105,9 @@ class game_NineMensMorris:
 
     # return true if the parameter player have won and false else
     def check_winner(self):
-        if not self.legal_places_after(2) or self.agent_pieces < 3:
+        if self.opp_pieces_not_placed == 0 and not bool(self.legal_places_after(2)) or self.agent_pieces < 3:
             return 1
-        if not self.legal_places_after(1) or self.opp_pieces < 3:
+        if self.agent_pieces_not_placed == 0 and not bool(self.legal_places_after(1)) or self.opp_pieces < 3:
             return 2
         return 0
 
@@ -122,7 +122,6 @@ class game_NineMensMorris:
         if self.opp_pieces_not_placed == 0:
             legal = self.legal_places_after(1)
             random_move = legal[rnd.randint(0, len(legal))]
-            print(random_move)
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
             return
@@ -168,9 +167,9 @@ class game_NineMensMorris:
         if self.check_new_mills(1):
             self.remove_opp_piece()
 
-class games:
+class Games:
     def __init__(self):
-        self.nmm = game_NineMensMorris()  # object of the nine men's morris
+        self.nmm = Game_NineMensMorris()  # object of the nine men's morris
         self.amount_games = 10  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
@@ -192,7 +191,7 @@ class games:
                 self.black_wins += 1
 
 
-ninemensmorris = games()
+ninemensmorris = Games()
 ninemensmorris.multiply_games()
 print("Wins for white:", ninemensmorris.white_wins)
 print("Wins for black:", ninemensmorris.black_wins)
