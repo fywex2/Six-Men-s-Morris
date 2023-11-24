@@ -28,7 +28,7 @@ class Game_NineMensMorris:
         self.tie_points = 0.5  # points for a tie
         self.loss_points_agent = 0  # points for a loss of agnet
         self.states = []  # collecting states from a single game
-        self.state_score = []  # collecting scores for each state in the game
+        self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
 
     # returns a list of where pieces could be placed
