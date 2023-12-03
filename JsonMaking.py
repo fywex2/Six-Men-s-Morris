@@ -188,11 +188,12 @@ class Game_NineMensMorris:
         self.opp_pieces_not_placed -= 1
         if self.check_new_mills(2):
             self.remove_agent_piece()
+            
 
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 100  # amount of games to run
+        self.amount_games = 1000  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
