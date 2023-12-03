@@ -7,6 +7,8 @@ creating the board itself when empty by 7x7 numpy array
 1 will be the white pieces that will be starting first, that can only be placed on places with the value of 0,
 2 will be the black pieces that will be starting second, that can only be placed on places with the value of 0)
 """
+
+
 class Game_NineMensMorris:
     def __init__(self):
         self.board = np.array([
@@ -193,7 +195,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1000  # amount of games to run
+        self.amount_games = 100  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
