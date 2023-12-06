@@ -32,6 +32,7 @@ class Game_NineMensMorris:
         self.states = []  # collecting states from a single game
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
+        self.pieces_removed = 0
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
@@ -87,20 +88,28 @@ class Game_NineMensMorris:
 
     # checks if there is a new line of 3 pieces of the selected player
     def check_new_mills(self, player):
-        print("********************************************************************************************************")
+        mills = np.array(
+            [[[0, 0], [0, 1], [0, 2]], [[0, 2], [1, 2], [2, 2]], [[2, 2], [2, 1], [2, 0]], [[2, 0], [1, 0], [0, 0]],
+             [[0, 3], [0, 4], [0, 5]], [[0, 5], [1, 5], [2, 5]], [[2, 5], [2, 4], [2, 3]], [[2, 3], [1, 3], [0, 3]],
+             [[3, 1], [3, 2], [3, 3]], [[3, 3], [4, 3], [5, 3]], [[5, 3], [5, 2], [5, 1]], [[5, 1], [4, 1], [3, 1]],
+             [[0, 1], [0, 4], [0, 6]], [[1, 2], [1, 4], [1, 6]], [[2, 1], [2, 4], [2, 6]], [[1, 0], [1, 3], [1, 5]],
+             [[0, 0], [0, 3], [0, 6]], [[0, 2], [0, 5], [0, 6]], [[2, 2], [2, 5], [2, 6]], [[2, 0], [2, 3], [2, 6]],
+             [[0, 1], [1, 4], [2, 6]], [[3, 1], [4, 3], [5, 6]], [[0, 4], [1, 4], [2, 4]], [[3, 2], [4, 3], [5, 4]]]
+        )
+
         count = 0
-        for i in range(7):
-            if self.board[i, 0] == self.board[i, 1] == self.board[i, 2] == player:
-                count += 1
-            if self.board[0, i] == self.board[1, i] == self.board[2, i] == player:
+        for mill in mills:
+            if self.board[mill[0][0], mill[0][1]] == self.board[mill[1][0], mill[1][1]] == self.board[mill[2][0], mill[2][1]] == player:
                 count += 1
         if player == 1:
-            self.white_mills = count
-            if count > self.white_mills:
+            prev = self.white_mills
+            if count > prev:
+                self.white_mills = count
                 return True
         if player == 2:
-            self.black_mills = count
-            if count > self.black_mills:
+            prev = self.black_mills
+            if count > prev:
+                self.black_mills = count
                 return True
         return False
 
@@ -152,6 +161,8 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.opp_pieces -= 1
+        print("********************************************************************************************************")
+        self.pieces_removed += 1
         self.check_new_mills(2)
 
     # remove random agent's piece
@@ -163,6 +174,8 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
+        print("********************************************************************************************************")
+        self.pieces_removed += 1
         self.check_new_mills(1)
 
     # makes a random opponent turn
@@ -206,11 +219,11 @@ class Games:
     def single_game(self):
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
-            print(self.nmm.board)
+            #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
             self.nmm.opp_turn()
-            print(self.nmm.board)
+            #print(self.nmm.board)
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
@@ -223,8 +236,8 @@ class Games:
                 self.black_wins += 1
             self.nmm = Game_NineMensMorris()
 
-
 run_games = Games()
 run_games.multiply_games()
 print("Wins for white:", run_games.white_wins)
 print("Wins for black:", run_games.black_wins)
+print(run_games.nmm.pieces_removed)

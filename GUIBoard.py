@@ -2,21 +2,21 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 
-board_values = [
-    [0, -1, -1, 1, -1, -1, 0],
-    [-1, 1, -1, 2, -1, 2, -1],
-    [-1, -1, 0, 2, 1, -1, -1],
-    [0, 2, 2, -1, 1, 2, 1],
-    [-1, -1, 1, 2, 1, -1, -1],
-    [-1, 1, -1, 0, -1, 1, -1],
-    [0, -1, -1, 2, -1, -1, 2]
+matrix = [
+    [0, -1, -1, 2, -1, -1, 0],
+    [-1, 0, -1, 2, -1, 1, -1],
+    [-1, -1, 1, 1, 2, -1, -1],
+    [1, 0, 0, -1, 1, 2, 2],
+    [-1, -1, 1, 1, 0, -1, -1],
+    [-1, 2, -1, 0, -1, 2, -1],
+    [2, -1, -1, 1, -1, -1, 2]
 ]
 
 class NineMensMorrisGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Nine Men's Morris")
-        self.board = np.array(board_values)
+        self.board = np.array(matrix)
         self.canvas_size = 400
         self.cell_size = self.canvas_size // 7
         self.create_board_gui()
