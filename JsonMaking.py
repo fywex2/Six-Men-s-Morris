@@ -32,7 +32,6 @@ class Game_NineMensMorris:
         self.states = []  # collecting states from a single game
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
-        self.pieces_removed = 0
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
@@ -94,7 +93,8 @@ class Game_NineMensMorris:
              [[3, 1], [3, 2], [3, 3]], [[3, 3], [4, 3], [5, 3]], [[5, 3], [5, 2], [5, 1]], [[5, 1], [4, 1], [3, 1]],
              [[0, 1], [0, 4], [0, 6]], [[1, 2], [1, 4], [1, 6]], [[2, 1], [2, 4], [2, 6]], [[1, 0], [1, 3], [1, 5]],
              [[0, 0], [0, 3], [0, 6]], [[0, 2], [0, 5], [0, 6]], [[2, 2], [2, 5], [2, 6]], [[2, 0], [2, 3], [2, 6]],
-             [[0, 1], [1, 4], [2, 6]], [[3, 1], [4, 3], [5, 6]], [[0, 4], [1, 4], [2, 4]], [[3, 2], [4, 3], [5, 4]]]
+             [[0, 1], [1, 4], [2, 6]], [[3, 1], [4, 3], [5, 6]], [[0, 4], [1, 4], [2, 4]], [[3, 2], [4, 3], [5, 4]],
+             [[0, 0], [1, 4], [2, 6]], [[3, 1], [4, 1], [5, 1]], [[0, 6], [1, 4], [2, 0]], [[3, 6], [4, 3], [5, 0]]]
         )
 
         count = 0
@@ -162,7 +162,6 @@ class Game_NineMensMorris:
         self.board[random_remove[0]][random_remove[1]] = 0
         self.opp_pieces -= 1
         print("********************************************************************************************************")
-        self.pieces_removed += 1
         self.check_new_mills(2)
 
     # remove random agent's piece
@@ -175,7 +174,6 @@ class Game_NineMensMorris:
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
         print("********************************************************************************************************")
-        self.pieces_removed += 1
         self.check_new_mills(1)
 
     # makes a random opponent turn
@@ -211,7 +209,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1  # amount of games to run
+        self.amount_games = 100  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -240,4 +238,3 @@ run_games = Games()
 run_games.multiply_games()
 print("Wins for white:", run_games.white_wins)
 print("Wins for black:", run_games.black_wins)
-print(run_games.nmm.pieces_removed)
