@@ -87,6 +87,7 @@ class Game_NineMensMorris:
 
     # checks if there is a new line of 3 pieces of the selected player
     def check_new_mills(self, player):
+        print("********************************************************************************************************")
         count = 0
         for i in range(7):
             if self.board[i, 0] == self.board[i, 1] == self.board[i, 2] == player:
@@ -103,17 +104,19 @@ class Game_NineMensMorris:
                 return True
         return False
 
-    # return true if the parameter player have won and false else
+    # return 1 if white won 2 if black won 0 if no one won
     def check_winner(self):
-        if (self.opp_pieces_not_placed == 0 and not bool(self.legal_places_after(2))) or self.agent_pieces < 3:
+        if (self.opp_pieces_not_placed == 0 and self.opp_pieces > 3 and not len(self.legal_places_after(2)) != 0) \
+             or (self.opp_pieces == 3 and len(self.flying_stage_moves(2)) == 0) or self.opp_pieces < 3:
             return 1
-        if (self.agent_pieces_not_placed == 0 and not bool(self.legal_places_after(1))) or self.opp_pieces < 3:
+        if (self.agent_pieces_not_placed == 0 and self.agent_pieces > 3 and not len(self.legal_places_after(1)) != 0) \
+             or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
             return 2
         return 0
 
     # makes a random agent turn
     def agent_turn(self):
-        if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
+        if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
             legal = self.flying_stage_moves(1)
             if len(legal) < 2:
                 random_move = legal[0]
@@ -121,8 +124,7 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
-            return
-        if self.opp_pieces_not_placed == 0:
+        if self.agent_pieces_not_placed == 0:
             legal = self.legal_places_after(1)
             if len(legal) < 2:
                 random_move = legal[0]
@@ -130,36 +132,38 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
-            return
-        legal = self.legal_places_before()
-        if len(legal) < 2:
-            random_move = legal[0]
-        else:
-            random_move = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_move[0]][random_move[1]] = 1
-        self.agent_pieces_not_placed -= 1
+        if self.agent_pieces_not_placed > 0:
+            legal = self.legal_places_before()
+            if len(legal) < 2:
+                random_move = legal[0]
+            else:
+                random_move = legal[rnd.randint(0, len(legal) - 1)]
+            self.board[random_move[0]][random_move[1]] = 1
+            self.agent_pieces_not_placed -= 1
         if self.check_new_mills(1):
             self.remove_opp_piece()
 
     # remove random opponent's piece
     def remove_opp_piece(self):
-        legal = self.white_places()
-        if len(legal) < 2:
-            random_remove = legal[0]
-        else:
-            random_remove = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_remove[0]][random_remove[1]] = 0
-        self.opp_pieces -= 1
-
-    # remove random agent's piece
-    def remove_agent_piece(self):
         legal = self.black_places()
         if len(legal) < 2:
             random_remove = legal[0]
         else:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
+        self.opp_pieces -= 1
+        self.check_new_mills(2)
+
+    # remove random agent's piece
+    def remove_agent_piece(self):
+        legal = self.white_places()
+        if len(legal) < 2:
+            random_remove = legal[0]
+        else:
+            random_remove = legal[rnd.randint(0, len(legal) - 1)]
+        self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
+        self.check_new_mills(1)
 
     # makes a random opponent turn
     def opp_turn(self):
@@ -171,7 +175,6 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
-            return
         if self.opp_pieces_not_placed == 0:
             legal = self.legal_places_after(2)
             if len(legal) < 2:
@@ -180,14 +183,14 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 2
-            return
-        legal = self.legal_places_before()
-        if len(legal) < 2:
-            random_move = legal[0]
-        else:
-            random_move = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_move[0]][random_move[1]] = 2
-        self.opp_pieces_not_placed -= 1
+        if self.opp_pieces_not_placed > 0:
+            legal = self.legal_places_before()
+            if len(legal) < 2:
+                random_move = legal[0]
+            else:
+                random_move = legal[rnd.randint(0, len(legal) - 1)]
+            self.board[random_move[0]][random_move[1]] = 2
+            self.opp_pieces_not_placed -= 1
         if self.check_new_mills(2):
             self.remove_agent_piece()
 
@@ -204,12 +207,10 @@ class Games:
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
             print(self.nmm.board)
-            print(self.nmm.agent_pieces_not_placed)
             if self.nmm.check_winner() != 0:
                 break
             self.nmm.opp_turn()
             print(self.nmm.board)
-            print(self.nmm.opp_pieces_not_placed)
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
