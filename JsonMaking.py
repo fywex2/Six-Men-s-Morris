@@ -43,21 +43,39 @@ class Game_NineMensMorris:
         return moves_list
 
     def possible_adj(self, position):
-        # Get the coordinates of the position
-        x, y = position
-        # Define the possible offsets for the adjacent positions
-        offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        # Generate the adjacent positions by adding the offsets to the position
-        adjacent = [[x + dx, y + dy] for dx, dy in offsets]
-        # Filter out the invalid positions that are out of bounds or have a -1 value
-        adjacent = [pos for pos in adjacent if 0 <= pos[0] < 7 and 0 <= pos[1] < 7 and self.board[pos[0]][pos[1]] != -1]
-        # Return the adjacent positions
-        return adjacent
+        adjacent = {
+            (0, 0): [(0, 3), (3, 0)],
+            (0, 3): [(0, 0), (0, 6), (1, 3)],
+            (0, 6): [(0, 3), (3, 6)],
+            (1, 1): [(1, 3), (3, 1)],
+            (1, 3): [(1, 1), (1, 5), (0, 3), (2, 3)],
+            (1, 5): [(1, 3), (3, 5)],
+            (2, 2): [(2, 3), (3, 2)],
+            (2, 3): [(2, 2), (1, 3), (2, 4)],
+            (2, 4): [(2, 3), (3, 4)],
+            (3, 0): [(0, 0), (3, 1), (6, 0)],
+            (3, 1): [(3, 0), (1, 1), (3, 2), (5, 1)],
+            (3, 2): [(3, 1), (2, 2), (3, 4)],
+            (3, 4): [(3, 2), (5, 4), (3, 5), (2, 4)],
+            (3, 5): [(3, 4), (5, 5), (3, 6)],
+            (3, 6): [(3, 5), (0, 6), (6, 6)],
+            (4, 2): [(4, 3)],
+            (4, 3): [(4, 2), (5, 3)],
+            (4, 4): [(5, 4)],
+            (5, 1): [(3, 1), (5, 2), (5, 4)],
+            (5, 2): [(5, 1), (5, 5)],
+            (5, 3): [(5, 2), (4, 3), (5, 4)],
+            (5, 4): [(5, 1), (3, 4), (5, 5)],
+            (5, 5): [(5, 4), (5, 2), (3, 5)],
+            (6, 0): [(3, 0), (6, 3)],
+            (6, 3): [(6, 0), (6, 6), (5, 3)],
+            (6, 6): [(6, 3), (3, 6)],
+        }
+        return adjacent[position]
 
     # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
     def legal_places_after(self, player):
         moves_list = []
-
         for i in range(7):
             for j in range(7):
                 if self.board[i, j] == player:
@@ -66,8 +84,11 @@ class Game_NineMensMorris:
 
                     for position in adjacent_positions:
                         x, y = position
-                        if 0 <= x < 7 and 0 <= y < 7 and self.board[x, y] == 0:
+                        if self.board[x, y] == 0:
                             temp_moves.append(position)
+
+                    if len(temp_moves) == 0:
+                        continue
 
                     moves_list.append([(i, j), temp_moves])
 
@@ -158,7 +179,10 @@ class Game_NineMensMorris:
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
-            temp_random = random_move[1][rnd.randint(0,1)]
+            if len(random_move[1]):
+                temp_random = random_move[1][0]
+            else:
+                temp_random = random_move[1][rnd.randint(0,1)]
             self.board[temp_random[0],temp_random[1]] = 1
         if self.agent_pieces_not_placed > 0:
             legal = self.legal_places_before()
@@ -212,7 +236,10 @@ class Game_NineMensMorris:
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
-            temp_random = random_move[1][rnd.randint(0, 1)]
+            if len(random_move[1]):
+                temp_random = random_move[1][0]
+            else:
+                temp_random = random_move[1][rnd.randint(0, 1)]
             self.board[temp_random[0], temp_random[1]] = 2
         if self.opp_pieces_not_placed > 0:
             legal = self.legal_places_before()
@@ -229,7 +256,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 100  # amount of games to run
+        self.amount_games = 1  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -237,11 +264,11 @@ class Games:
     def single_game(self):
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
-            #print(self.nmm.board)
+            print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
             self.nmm.opp_turn()
-            #print(self.nmm.board)
+            print(self.nmm.board)
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
