@@ -42,17 +42,35 @@ class Game_NineMensMorris:
                     moves_list.append((i, j))
         return moves_list
 
+    def possible_adj(self, position):
+        # Get the coordinates of the position
+        x, y = position
+        # Define the possible offsets for the adjacent positions
+        offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        # Generate the adjacent positions by adding the offsets to the position
+        adjacent = [[x + dx, y + dy] for dx, dy in offsets]
+        # Filter out the invalid positions that are out of bounds or have a -1 value
+        adjacent = [pos for pos in adjacent if 0 <= pos[0] < 7 and 0 <= pos[1] < 7 and self.board[pos[0]][pos[1]] != -1]
+        # Return the adjacent positions
+        return adjacent
+
     # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
     def legal_places_after(self, player):
         moves_list = []
+
         for i in range(7):
             for j in range(7):
                 if self.board[i, j] == player:
-                    adjacent_positions = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
+                    adjacent_positions = self.possible_adj((i, j))
+                    temp_moves = []
 
-                    for adj_i, adj_j in adjacent_positions:
-                        if (0 <= adj_i < 7) and (0 <= adj_j < 7) and self.board[adj_i, adj_j] == 0:
-                            moves_list.append(((i, j), (adj_i, adj_j)))
+                    for position in adjacent_positions:
+                        x, y = position
+                        if 0 <= x < 7 and 0 <= y < 7 and self.board[x, y] == 0:
+                            temp_moves.append(position)
+
+                    moves_list.append([(i, j), temp_moves])
+
         return moves_list
 
     # returns a list of where pieces could be moved when there are 3 pieces left on the board (flying stage)
@@ -131,7 +149,7 @@ class Game_NineMensMorris:
                 random_move = legal[0]
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
+            self.board[random_move[1][rnd.randint(0,1)[0]], random_move[1][rnd.randint(0,1)[1]]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
         if self.agent_pieces_not_placed == 0:
             legal = self.legal_places_after(1)
@@ -140,7 +158,8 @@ class Game_NineMensMorris:
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
-            self.board[random_move[1][0]][random_move[1][1]] = 1
+            temp_random = random_move[1][rnd.randint(0,1)]
+            self.board[temp_random[0],temp_random[1]] = 1
         if self.agent_pieces_not_placed > 0:
             legal = self.legal_places_before()
             if len(legal) < 2:
@@ -193,7 +212,8 @@ class Game_NineMensMorris:
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0][0]][random_move[0][1]] = 0
-            self.board[random_move[1][0]][random_move[1][1]] = 2
+            temp_random = random_move[1][rnd.randint(0, 1)]
+            self.board[temp_random[0], temp_random[1]] = 2
         if self.opp_pieces_not_placed > 0:
             legal = self.legal_places_before()
             if len(legal) < 2:

@@ -3,20 +3,29 @@ from tkinter import messagebox
 import numpy as np
 
 matrix = [
-    [0, -1, -1, 2, -1, -1, 0],
-    [-1, 0, -1, 2, -1, 1, -1],
-    [-1, -1, 1, 1, 2, -1, -1],
-    [1, 0, 0, -1, 1, 2, 2],
-    [-1, -1, 1, 1, 0, -1, -1],
-    [-1, 2, -1, 0, -1, 2, -1],
-    [2, -1, -1, 1, -1, -1, 2]
+    [0, -1, -1, 0, -1, -1, 0],
+    [-1, 0, -1, 0, -1, 0, -1],
+    [-1, -1, 0, 0, 0, -1, -1],
+    [0, 0, 0, -1, 0, 0, 0],
+    [-1, -1, 0, 0, 0, -1, -1],
+    [-1, 0, -1, 0, -1, 0, -1],
+    [0, -1, -1, 0, -1, -1, 0]
 ]
 
 class NineMensMorrisGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Nine Men's Morris")
-        self.board = np.array(matrix)
+        self.board = np.array([
+    [0, -1, -1, 0, -1, -1, 0],
+    [-1, 0, -1, 0, -1, 0, -1],
+    [-1, -1, 0, 0, 0, -1, -1],
+    [0, 0, 0, -1, 0, 0, 0],
+    [-1, -1, 0, 0, 0, -1, -1],
+    [-1, 0, -1, 0, -1, 0, -1],
+    [0, -1, -1, 0, -1, -1, 0]
+])
+        print(matrix)
         self.canvas_size = 400
         self.cell_size = self.canvas_size // 7
         self.create_board_gui()
