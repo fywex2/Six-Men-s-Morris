@@ -32,6 +32,7 @@ class Game_NineMensMorris:
         self.states = []  # collecting states from a single game
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
+        self.num_moves = 0
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
@@ -160,6 +161,8 @@ class Game_NineMensMorris:
         if (self.agent_pieces_not_placed == 0 and self.agent_pieces > 3 and not len(self.legal_places_after(1)) != 0) \
              or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
             return 2
+        if self.num_moves > 9999:
+            return -1
         return 0
 
     # makes a random agent turn
@@ -194,6 +197,7 @@ class Game_NineMensMorris:
             self.agent_pieces_not_placed -= 1
         if self.check_new_mills(1):
             self.remove_opp_piece()
+        self.num_moves += 1
 
     # remove random opponent's piece
     def remove_opp_piece(self):
@@ -251,12 +255,13 @@ class Game_NineMensMorris:
             self.opp_pieces_not_placed -= 1
         if self.check_new_mills(2):
             self.remove_agent_piece()
+        self.num_moves += 1
 
 
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1  # amount of games to run
+        self.amount_games = 100  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -264,11 +269,11 @@ class Games:
     def single_game(self):
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
-            print(self.nmm.board)
+            #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
             self.nmm.opp_turn()
-            print(self.nmm.board)
+            #print(self.nmm.board)
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
