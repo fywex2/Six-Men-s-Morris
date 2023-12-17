@@ -49,28 +49,26 @@ class Game_NineMensMorris:
             (0, 3): [(0, 0), (0, 6), (1, 3)],
             (0, 6): [(0, 3), (3, 6)],
             (1, 1): [(1, 3), (3, 1)],
-            (1, 3): [(1, 1), (1, 5), (0, 3), (2, 3)],
+            (1, 3): [(0, 3), (1, 1), (1, 5), (2, 3)],
             (1, 5): [(1, 3), (3, 5)],
             (2, 2): [(2, 3), (3, 2)],
-            (2, 3): [(2, 2), (1, 3), (2, 4)],
+            (2, 3): [(1, 3), (2, 2), (2, 4)],
             (2, 4): [(2, 3), (3, 4)],
             (3, 0): [(0, 0), (3, 1), (6, 0)],
-            (3, 1): [(3, 0), (1, 1), (3, 2), (5, 1)],
-            (3, 2): [(3, 1), (2, 2), (3, 4)],
-            (3, 4): [(3, 2), (5, 4), (3, 5), (2, 4)],
-            (3, 5): [(3, 4), (5, 5), (3, 6)],
-            (3, 6): [(3, 5), (0, 6), (6, 6)],
-            (4, 2): [(4, 3)],
-            (4, 3): [(4, 2), (5, 3)],
-            (4, 4): [(5, 4)],
-            (5, 1): [(3, 1), (5, 2), (5, 4)],
-            (5, 2): [(5, 1), (5, 5)],
-            (5, 3): [(5, 2), (4, 3), (5, 4)],
-            (5, 4): [(5, 1), (3, 4), (5, 5)],
-            (5, 5): [(5, 4), (5, 2), (3, 5)],
+            (3, 1): [(1, 1), (3, 0), (3, 2), (5, 1)],
+            (3, 2): [(2, 2), (3, 1), (4, 2)],
+            (3, 4): [(2, 4), (3, 5), (4, 4)],
+            (3, 5): [(1, 5), (3, 4), (3, 6), (5, 5)],
+            (3, 6): [(0, 6), (3, 5), (6, 6)],
+            (4, 2): [(3, 2), (4, 3)],
+            (4, 3): [(4, 2), (4, 4), (5, 3)],
+            (4, 4): [(3, 4), (4, 3)],
+            (5, 1): [(3, 1), (5, 3)],
+            (5, 3): [(4, 3), (5, 1), (5, 5), (6, 3)],
+            (5, 5): [(3, 5), (5, 3)],
             (6, 0): [(3, 0), (6, 3)],
-            (6, 3): [(6, 0), (6, 6), (5, 3)],
-            (6, 6): [(6, 3), (3, 6)],
+            (6, 3): [(5, 3), (6, 0), (6, 6)],
+            (6, 6): [(3, 6), (6, 3)]
         }
         return adjacent[position]
 
@@ -161,7 +159,7 @@ class Game_NineMensMorris:
         if (self.agent_pieces_not_placed == 0 and self.agent_pieces > 3 and not len(self.legal_places_after(1)) != 0) \
              or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
             return 2
-        if self.num_moves > 9999:
+        if self.num_moves > 99999:
             return -1
         return 0
 
@@ -208,7 +206,7 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.opp_pieces -= 1
-        print("********************************************************************************************************")
+        #print("********************************************************************************************************")
         self.check_new_mills(2)
 
     # remove random agent's piece
@@ -220,7 +218,7 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
-        print("********************************************************************************************************")
+        #print("********************************************************************************************************")
         self.check_new_mills(1)
 
     # makes a random opponent turn
@@ -270,10 +268,13 @@ class Games:
         while self.nmm.check_winner() == 0:
             self.nmm.agent_turn()
             #print(self.nmm.board)
+            #print(self.nmm.legal_places_after(2))
             if self.nmm.check_winner() != 0:
                 break
             self.nmm.opp_turn()
             #print(self.nmm.board)
+        #print(self.nmm.legal_places_after(1))
+        #print(self.nmm.board)
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
@@ -285,6 +286,7 @@ class Games:
             elif game_result == 2:
                 self.black_wins += 1
             self.nmm = Game_NineMensMorris()
+
 
 run_games = Games()
 run_games.multiply_games()
