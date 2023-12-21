@@ -29,25 +29,24 @@ class Game_NineMensMorris:
         self.opp_pieces_not_placed = 9  # the amount of pieces that wasn't place on the board of the opponent
         self.white_mills = 0  # white mills on the board
         self.black_mills = 0  # black mills on the board
-        self.win_points_agent = 1  # points for the win of agent
+        self.win_points_agent = 10  # points for the win of agent
         self.loss_points_agent = 0  # points for a loss of agent
         self.states = []  # collecting states from a single game
         self.state_scores = []  # collecting scores for each state in the game
-        self.gama = 0.9  # amount to multiply the state every new board
+        self.gama = 0.95  # amount to multiply the state every new board
         self.num_moves = 0
+        self.prev_rank = 10/0.95
 
     def rank_board_state(self):
-        rank = 0
         if self.check_winner() == 1:
-            rank = self.win_points_agent
+            self.prev_rank = self.win_points_agent
         if self.check_winner() == 2:
-            rank = self.loss_points_agent
-
+            self.prev_rank = self.loss_points_agent
         else:
-            rank = self.gama ** self.num_moves
+            self.prev_rank *= self.gama
 
         self.states.append(''.join(map(str, self.board.flatten())))
-        self.state_scores.append(rank)
+        self.state_scores.append(self.prev_rank)
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
