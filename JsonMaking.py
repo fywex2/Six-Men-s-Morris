@@ -30,12 +30,24 @@ class Game_NineMensMorris:
         self.white_mills = 0  # white mills on the board
         self.black_mills = 0  # black mills on the board
         self.win_points_agent = 1  # points for the win of agent
-        self.tie_points = 0.5  # points for a tie
         self.loss_points_agent = 0  # points for a loss of agent
         self.states = []  # collecting states from a single game
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
         self.num_moves = 0
+
+    def rank_board_state(self):
+        rank = 0
+        if self.check_winner() == 1:
+            rank = self.win_points_agent
+        if self.check_winner() == 2:
+            rank = self.loss_points_agent
+
+        else:
+            rank = self.gama ** self.num_moves
+
+        self.states.append(''.join(map(str, self.board.flatten())))
+        self.state_scores.append(rank)
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
@@ -198,8 +210,11 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0]][random_move[1]] = 1
             self.agent_pieces_not_placed -= 1
+        self.rank_board_state()
         if self.check_new_mills(1):
             self.remove_opp_piece()
+            self.rank_board_state()
+            self.num_moves += 1
         self.num_moves += 1
 
     # remove random opponent's piece
@@ -211,7 +226,6 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.opp_pieces -= 1
-        self.check_new_mills(2)
 
     # remove random agent's piece
     def remove_agent_piece(self):
@@ -222,7 +236,6 @@ class Game_NineMensMorris:
             random_remove = legal[rnd.randint(0, len(legal) - 1)]
         self.board[random_remove[0]][random_remove[1]] = 0
         self.agent_pieces -= 1
-        self.check_new_mills(1)
 
     # makes a random opponent turn
     def opp_turn(self):
@@ -254,15 +267,18 @@ class Game_NineMensMorris:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
             self.board[random_move[0]][random_move[1]] = 2
             self.opp_pieces_not_placed -= 1
+        self.rank_board_state()
         if self.check_new_mills(2):
             self.remove_agent_piece()
+            self.rank_board_state()
+            self.num_moves += 1
         self.num_moves += 1
 
 
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 100  # amount of games to run
+        self.amount_games = 1  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -291,6 +307,8 @@ class Games:
                 self.white_wins += 1
             elif game_result == 2:
                 self.black_wins += 1
+            board_ranks = {key: rank for key, rank in zip(run_games.nmm.states, run_games.nmm.state_scores)}
+            print(board_ranks)
             self.nmm = Game_NineMensMorris()
 
 
