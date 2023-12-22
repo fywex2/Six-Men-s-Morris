@@ -6,7 +6,7 @@ start_time = time.time()
 
 """
 creating the board itself when empty by 7x7 numpy array
-(0 is the places where pieces could be placed, -1 places where pieces can't be placed,
+(0 is the places where pieces could be placed, 9 places where pieces can't be placed,
 1 will be the white pieces that will be starting first, that can only be placed on places with the value of 0,
 2 will be the black pieces that will be starting second, that can only be placed on places with the value of 0)
 """
@@ -15,13 +15,13 @@ creating the board itself when empty by 7x7 numpy array
 class Game_NineMensMorris:
     def __init__(self):
         self.board = np.array([
-            [0, -1, -1, 0, -1, -1, 0],
-            [-1, 0, -1, 0, -1, 0, -1],
-            [-1, -1, 0, 0, 0, -1, -1],
-            [0, 0, 0, -1, 0, 0, 0],
-            [-1, -1, 0, 0, 0, -1, -1],
-            [-1, 0, -1, 0, -1, 0, -1],
-            [0, -1, -1, 0, -1, -1, 0]
+            [0, 9, 9, 0, 9, 9, 0],
+            [9, 0, 9, 0, 9, 0, 9],
+            [9, 9, 0, 0, 0, 9, 9],
+            [0, 0, 0, 9, 0, 0, 0],
+            [9, 9, 0, 0, 0, 9, 9],
+            [9, 0, 9, 0, 9, 0, 9],
+            [0, 9, 9, 0, 9, 9, 0]
         ], dtype=np.int8)
         self.agent_pieces = 9  # the amount of total pieces of the agent
         self.opp_pieces = 9  # the amount of total pieces of the opponent
@@ -42,6 +42,8 @@ class Game_NineMensMorris:
             rank = self.win_points_agent
         if self.check_winner() == 2:
             rank = self.loss_points_agent
+
+        rank = float(rank)
 
         self.states.append(''.join(map(str, self.board.flatten())))
         self.state_scores.append(rank)
@@ -115,7 +117,6 @@ class Game_NineMensMorris:
                         for y in range(7):
                             if self.board[x][y] == 0 and (i == x or j == y or abs(i - x) == abs(j - y)):
                                 moves_list.append(((i, j), (x, y)))
-        print("flying")
         return moves_list
 
     # returns a list of where the white pieces are on the board
