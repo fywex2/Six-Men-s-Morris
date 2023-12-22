@@ -3,6 +3,7 @@ import random as rnd
 import time
 
 start_time = time.time()
+board_ranks = {}
 
 """
 creating the board itself when empty by 7x7 numpy array
@@ -276,7 +277,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1  # amount of games to run
+        self.amount_games = 2  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -294,7 +295,7 @@ class Games:
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
-    def multiply_games(self):
+    def multiply_games(self, board_ranks = board_ranks):
         for i in range(self.amount_games):
             print(i+1)
             game_result = self.single_game()
@@ -305,8 +306,7 @@ class Games:
                 self.white_wins += 1
             elif game_result == 2:
                 self.black_wins += 1
-            board_ranks = {key: rank for key, rank in zip(run_games.nmm.states, run_games.nmm.state_scores)}
-            print(board_ranks)
+            board_ranks.update({key: rank for key, rank in zip(run_games.nmm.states, run_games.nmm.state_scores)})
             self.nmm = Game_NineMensMorris()
 
 
@@ -314,5 +314,6 @@ run_games = Games()
 run_games.multiply_games()
 print("Wins for white:", run_games.white_wins)
 print("Wins for black:", run_games.black_wins)
+print(board_ranks)
 
 print(time.time() - start_time, "seconds")
