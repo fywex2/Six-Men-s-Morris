@@ -35,18 +35,16 @@ class Game_NineMensMorris:
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.95  # amount to multiply the state every new board
         self.num_moves = 0
-        self.prev_rank = 10/0.95
 
     def rank_board_state(self):
+        rank = 10 * self.gama ** self.num_moves
         if self.check_winner() == 1:
-            self.prev_rank = self.win_points_agent
+            rank = self.win_points_agent
         if self.check_winner() == 2:
-            self.prev_rank = self.loss_points_agent
-        else:
-            self.prev_rank *= self.gama
+            rank = self.loss_points_agent
 
         self.states.append(''.join(map(str, self.board.flatten())))
-        self.state_scores.append(self.prev_rank)
+        self.state_scores.append(rank)
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
