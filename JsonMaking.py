@@ -4,7 +4,8 @@ import time
 import json
 
 start_time = time.time()
-board_ranks = {}
+with open('GameData.json', 'r') as file:
+    board_ranks = json.load(file)
 
 """
 creating the board itself when empty by 7x7 numpy array
@@ -278,7 +279,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 2  # amount of games to run
+        self.amount_games = 1  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -310,19 +311,14 @@ class Games:
             board_ranks.update({key: rank for key, rank in zip(run_games.nmm.states, run_games.nmm.state_scores)})
             self.nmm = Game_NineMensMorris()
 
-    def save_board_ranks_to_json(self):
-        json_file_path = 'GameData.json'
-        existing_data = load_json(json_file_path)
-        existing_data.update(self.board_ranks)
-        save_to_json(existing_data, json_file_path)
-
 
 run_games = Games()
 run_games.multiply_games()
-run_games.save_board_ranks_to_json()
-
 print("Wins for white:", run_games.white_wins)
 print("Wins for black:", run_games.black_wins)
-print(run_games.board_ranks)
+print(board_ranks)
+
+with open('GameData.json', 'w') as file:
+    json.dump(board_ranks, file, indent=4)
 
 print(time.time() - start_time, "seconds")
