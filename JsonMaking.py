@@ -1,6 +1,7 @@
 import numpy as np
 import random as rnd
 import time
+import json
 
 start_time = time.time()
 board_ranks = {}
@@ -295,7 +296,7 @@ class Games:
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
-    def multiply_games(self, board_ranks = board_ranks):
+    def multiply_games(self, board_ranks=board_ranks):
         for i in range(self.amount_games):
             print(i+1)
             game_result = self.single_game()
@@ -309,11 +310,19 @@ class Games:
             board_ranks.update({key: rank for key, rank in zip(run_games.nmm.states, run_games.nmm.state_scores)})
             self.nmm = Game_NineMensMorris()
 
+    def save_board_ranks_to_json(self):
+        json_file_path = 'GameData.json'
+        existing_data = load_json(json_file_path)
+        existing_data.update(self.board_ranks)
+        save_to_json(existing_data, json_file_path)
+
 
 run_games = Games()
 run_games.multiply_games()
+run_games.save_board_ranks_to_json()
+
 print("Wins for white:", run_games.white_wins)
 print("Wins for black:", run_games.black_wins)
-print(board_ranks)
+print(run_games.board_ranks)
 
 print(time.time() - start_time, "seconds")
