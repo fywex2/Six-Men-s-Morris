@@ -29,6 +29,49 @@ class Game_NineMensMorris:
         self.opp_pieces_not_placed = 6  # the amount of pieces that wasn't place on the board of the opponent
         self.white_mills = 0  # white mills on the board
         self.black_mills = 0  # black mills on the board
+        self.possible_mills = [
+            # Horizontal mills on the first row
+            [[0, 0], [0, 1], [0, 2]],
+            [[0, 2], [1, 2], [2, 2]],
+            [[2, 2], [2, 1], [2, 0]],
+            [[2, 0], [1, 0], [0, 0]],
+
+            # Horizontal mills on the second row
+            [[0, 2], [0, 3], [0, 4]],
+            [[0, 4], [1, 4], [2, 4]],
+            [[2, 4], [2, 3], [2, 2]],
+            [[2, 2], [1, 2], [0, 2]],
+
+            # Horizontal mills on the third row
+            [[1, 1], [1, 2], [1, 3]],
+            [[1, 3], [2, 3], [3, 3]],
+            [[3, 3], [3, 2], [3, 1]],
+            [[3, 1], [2, 1], [1, 1]],
+
+            # Vertical mills on the first column
+            [[0, 1], [0, 3], [0, 4]],
+            [[1, 2], [1, 3], [1, 4]],
+            [[2, 1], [2, 3], [2, 4]],
+            [[1, 0], [1, 2], [1, 4]]
+        ]
+        self.possible_adj = {
+            (0, 0): [(0, 2), (2, 0)],
+            (0, 2): [(0, 0), (0, 4), (1, 2)],
+            (0, 4): [(2, 4), (0, 2)],
+            (1, 1): [(1, 2), (2, 1)],
+            (1, 2): [(1, 1), (1, 3), (0, 2)],
+            (1, 3): [(1, 2), (2, 3)],
+            (2, 0): [(0, 0), (4, 0), (2, 1)],
+            (2, 1): [(2, 0), (1, 1), (3, 1)],
+            (2, 3): [(2, 4), (1, 3), (3, 3)],
+            (2, 4): [(0, 4), (4, 4), (2, 3)],
+            (3, 1): [(2, 1), (3, 2)],
+            (3, 2): [(4, 2), (3, 1), (3, 3)],
+            (3, 3): [(3, 2), (2, 3)],
+            (4, 0): [(2, 0), (4, 2)],
+            (4, 2): [(3, 2), (4, 0), (4, 4)],
+            (4, 4): [(4, 2), (2, 4)]
+        }
         self.win_points_agent = 10  # points for the win of agent
         self.loss_points_agent = 0  # points for a loss of agent
         self.states = []  # collecting states from a single game
@@ -58,34 +101,13 @@ class Game_NineMensMorris:
                     moves_list.append((i, j))
         return moves_list
 
-    def possible_adj(self, position):
-        adjacent = {
-            (0, 0): [(0, 2), (2, 0)],
-            (0, 2): [(0, 0), (0, 4), (1, 2)],
-            (0, 4): [(2, 4), (0, 2)],
-            (1, 1): [(1, 2), (2, 1)],
-            (1, 2): [(1, 1), (1, 3), (0, 2)],
-            (1, 3): [(1, 2), (2, 3)],
-            (2, 0): [(0, 0), (4, 0), (2, 1)],
-            (2, 1): [(2, 0), (1, 1), (3, 1)],
-            (2, 3): [(2, 4), (1, 3), (3, 3)],
-            (2, 4): [(0, 4), (4, 4), (2, 3)],
-            (3, 1): [(2, 1), (3, 2)],
-            (3, 2): [(4, 2), (3, 1), (3, 3)],
-            (3, 3): [(3, 2), (2, 3)],
-            (4, 0): [(2, 0), (4, 2)],
-            (4, 2): [(3, 2), (4, 0), (4, 4)],
-            (4, 4): [(4, 2), (2, 4)]
-        }
-        return adjacent[position]
-
     # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
     def legal_places_after(self, player):
         moves_list = []
         for i in range(5):
             for j in range(5):
                 if self.board[i][j] == player:
-                    adjacent_positions = self.possible_adj((i, j))
+                    adjacent_positions = self.possible_adj(i, j)
                     temp_moves = []
 
                     for position in adjacent_positions:
@@ -133,34 +155,9 @@ class Game_NineMensMorris:
 
     # checks if there is a new line of 3 pieces of the selected player
     def check_new_mills(self, player):
-        mills = [
-            # Horizontal mills on the first row
-            [[0, 0], [0, 1], [0, 2]],
-            [[0, 2], [1, 2], [2, 2]],
-            [[2, 2], [2, 1], [2, 0]],
-            [[2, 0], [1, 0], [0, 0]],
-
-            # Horizontal mills on the second row
-            [[0, 2], [0, 3], [0, 4]],
-            [[0, 4], [1, 4], [2, 4]],
-            [[2, 4], [2, 3], [2, 2]],
-            [[2, 2], [1, 2], [0, 2]],
-
-            # Horizontal mills on the third row
-            [[1, 1], [1, 2], [1, 3]],
-            [[1, 3], [2, 3], [3, 3]],
-            [[3, 3], [3, 2], [3, 1]],
-            [[3, 1], [2, 1], [1, 1]],
-
-            # Vertical mills on the first column
-            [[0, 1], [0, 3], [0, 4]],
-            [[1, 2], [1, 3], [1, 4]],
-            [[2, 1], [2, 3], [2, 4]],
-            [[1, 0], [1, 2], [1, 4]]
-        ]
-
         count = 0
-        for mill in mills:
+
+        for mill in self.possible_mills:
             if self.board[mill[0][0]][mill[0][1]] == self.board[mill[1][0]][mill[1][1]] == self.board[mill[2][0]][mill[2][1]] == player:
                 count += 1
         if player == 1:
@@ -285,7 +282,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 100  # amount of games to run
+        self.amount_games = 1000  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
@@ -325,7 +322,7 @@ class Games:
                 aggregated_dict[board]['count'] += 1
 
             board_ranks = {**existing_data,
-                           **{board: (data['total_rank'] / data['count'], data['count']) for board, data in
+                           **{board: [data['total_rank'] / data['count'], data['count']] for board, data in
                               aggregated_dict.items()}}
 
             unique_dict = {}
@@ -341,7 +338,6 @@ class Games:
 
         print("Wins for white:", run_games.white_wins)
         print("Wins for black:", run_games.black_wins)
-        print(board_ranks)
 
         print(time.time() - start_time, "seconds")
 
