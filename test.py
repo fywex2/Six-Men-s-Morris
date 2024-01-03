@@ -1,302 +1,130 @@
-import numpy as np
-import random as rnd
-import time
+import random
 
-start_time = time.time()
+# Board representation
+board = [[' ' for _ in range(7)] for _ in range(7)]
 
-"""
-creating the board itself when empty by 7x7 numpy array
-(0 is the places where pieces could be placed, -1 places where pieces can't be placed,
-1 will be the white pieces that will be starting first, that can only be placed on places with the value of 0,
-2 will be the black pieces that will be starting second, that can only be placed on places with the value of 0)
-"""
+# Player symbols
+player1_symbol = 'X'
+player2_symbol = 'O'
 
+# Function to print the board
+def print_board():
+    for row in board:
+        print("|" + "|".join(row) + "|")
 
-class Game_NineMensMorris:
-    def __init__(self):
-        self.board = np.array([
-            [0, -1, -1, 0, -1, -1, 0],
-            [-1, 0, -1, 0, -1, 0, -1],
-            [-1, -1, 0, 0, 0, -1, -1],
-            [0, 0, 0, -1, 0, 0, 0],
-            [-1, -1, 0, 0, 0, -1, -1],
-            [-1, 0, -1, 0, -1, 0, -1],
-            [0, -1, -1, 0, -1, -1, 0]
-        ], dtype=np.int8)
-        self.agent_pieces = 9  # the amount of total pieces of the agent
-        self.opp_pieces = 9  # the amount of total pieces of the opponent
-        self.agent_pieces_not_placed = 9  # the amount of pieces that wasn't place on the board of the agent
-        self.opp_pieces_not_placed = 9  # the amount of pieces that wasn't place on the board of the opponent
-        self.white_mills = 0  # white mills on the board
-        self.black_mills = 0  # black mills on the board
-        self.win_points_agent = 1  # points for the win of agent
-        self.tie_points = 0.5  # points for a tie
-        self.loss_points_agent = 0  # points for a loss of agent
-        self.states = []  # collecting states from a single game
-        self.state_scores = []  # collecting scores for each state in the game
-        self.gama = 0.9  # amount to multiply the state every new board
-        self.num_moves = 0
-
-    # returns a list of where pieces could be placed
-    def legal_places_before(self):
-        moves_list = []
-        for i in range(7):
-            for j in range(7):
-                if self.board[i][j] == 0:
-                    moves_list.append((i, j))
-        return moves_list
-
-    def possible_adj(self, position):
-        adjacent = {
-            (0, 0): [(0, 3), (3, 0)],
-            (0, 3): [(0, 0), (0, 6), (1, 3)],
-            (0, 6): [(0, 3), (3, 6)],
-            (1, 1): [(1, 3), (3, 1)],
-            (1, 3): [(0, 3), (1, 1), (1, 5), (2, 3)],
-            (1, 5): [(1, 3), (3, 5)],
-            (2, 2): [(2, 3), (3, 2)],
-            (2, 3): [(1, 3), (2, 2), (2, 4)],
-            (2, 4): [(2, 3), (3, 4)],
-            (3, 0): [(0, 0), (3, 1), (6, 0)],
-            (3, 1): [(1, 1), (3, 0), (3, 2), (5, 1)],
-            (3, 2): [(2, 2), (3, 1), (4, 2)],
-            (3, 4): [(2, 4), (3, 5), (4, 4)],
-            (3, 5): [(1, 5), (3, 4), (3, 6), (5, 5)],
-            (3, 6): [(0, 6), (3, 5), (6, 6)],
-            (4, 2): [(3, 2), (4, 3)],
-            (4, 3): [(4, 2), (4, 4), (5, 3)],
-            (4, 4): [(3, 4), (4, 3)],
-            (5, 1): [(3, 1), (5, 3)],
-            (5, 3): [(4, 3), (5, 1), (5, 5), (6, 3)],
-            (5, 5): [(3, 5), (5, 3)],
-            (6, 0): [(3, 0), (6, 3)],
-            (6, 3): [(5, 3), (6, 0), (6, 6)],
-            (6, 6): [(3, 6), (6, 3)]
-        }
-        return adjacent[position]
-
-    # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
-    def legal_places_after(self, player):
-        moves_list = []
-        for i in range(7):
-            for j in range(7):
-                if self.board[i, j] == player:
-                    adjacent_positions = self.possible_adj((i, j))
-                    temp_moves = []
-
-                    for position in adjacent_positions:
-                        x, y = position
-                        if self.board[x, y] == 0:
-                            temp_moves.append(position)
-
-                    if len(temp_moves) == 0:
-                        continue
-
-                    moves_list.append([(i, j), temp_moves])
-
-        return moves_list
-
-    # returns a list of where pieces could be moved when there are 3 pieces left on the board (flying stage)
-    def flying_stage_moves(self, player):
-        moves_list = []
-        for i in range(7):
-            for j in range(7):
-                if self.board[i][j] == player:
-                    for x in range(7):
-                        for y in range(7):
-                            if self.board[x][y] == 0 and ((i == x and j != y) or (i != x and j == y) or (
-                                    abs(i - x) == 1 and abs(j - y) == 1)):
-                                moves_list.append(((i, j), (x, y)))
-        return moves_list
-
-    # returns a list of where the white pieces are on the board
-    def white_places(self):
-        white_locations = []
-        for i in range(7):
-            for j in range(7):
-                if self.board[i][j] == 1:
-                    white_locations.append((i, j))
-        return white_locations
-
-    # returns a list of where the black pieces are on the board
-    def black_places(self):
-        black_locations = []
-        for i in range(7):
-            for j in range(7):
-                if self.board[i][j] == 2:
-                    black_locations.append((i, j))
-        return black_locations
-
-    # checks if there is a new line of 3 pieces of the selected player
-    def check_new_mills(self, player):
-        mills = np.array(
-            [[[0, 0], [0, 1], [0, 2]], [[0, 2], [1, 2], [2, 2]], [[2, 2], [2, 1], [2, 0]], [[2, 0], [1, 0], [0, 0]],
-             [[0, 3], [0, 4], [0, 5]], [[0, 5], [1, 5], [2, 5]], [[2, 5], [2, 4], [2, 3]], [[2, 3], [1, 3], [0, 3]],
-             [[3, 1], [3, 2], [3, 3]], [[3, 3], [4, 3], [5, 3]], [[5, 3], [5, 2], [5, 1]], [[5, 1], [4, 1], [3, 1]],
-             [[0, 1], [0, 4], [0, 6]], [[1, 2], [1, 4], [1, 6]], [[2, 1], [2, 4], [2, 6]], [[1, 0], [1, 3], [1, 5]],
-             [[0, 0], [0, 3], [0, 6]], [[0, 2], [0, 5], [0, 6]], [[2, 2], [2, 5], [2, 6]], [[2, 0], [2, 3], [2, 6]],
-             [[0, 1], [1, 4], [2, 6]], [[3, 1], [4, 3], [5, 6]], [[0, 4], [1, 4], [2, 4]], [[3, 2], [4, 3], [5, 4]],
-             [[0, 0], [1, 4], [2, 6]], [[3, 1], [4, 1], [5, 1]], [[0, 6], [1, 4], [2, 0]], [[3, 6], [4, 3], [5, 0]]]
-        )
-
-        count = 0
-        for mill in mills:
-            if self.board[mill[0][0], mill[0][1]] == self.board[mill[1][0], mill[1][1]] == self.board[mill[2][0], mill[2][1]] == player:
-                count += 1
-        if player == 1:
-            prev = self.white_mills
-            if count > prev:
-                self.white_mills = count
-                return True
-        if player == 2:
-            prev = self.black_mills
-            if count > prev:
-                self.black_mills = count
-                return True
+# Function to check if a move is valid
+def is_valid_move(board, player, row, col):
+    if row < 0 or row > 6 or col < 0 or col > 6:
         return False
+    if board[row][col] != ' ':
+        return False
+    if player.count_pieces() == 9:  # Placement phase
+        return True
+    else:  # Movement phase
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if 0 <= row + i <= 6 and 0 <= col + j <= 6 and board[row + i][col + j] == player.symbol:
+                    if abs(i) + abs(j) == 2:  # Adjacent position
+                        return True
+                    elif abs(i) + abs(j) == 3 and board[(row + row + i) // 2][(col + col + j) // 2] == player.symbol:  # Mill jump
+                        return True
+    return False
 
-    # return 1 if white won 2 if black won 0 if no one won
-    def check_winner(self):
-        if (self.opp_pieces_not_placed == 0 and self.opp_pieces > 3 and not len(self.legal_places_after(2)) != 0) \
-             or (self.opp_pieces == 3 and len(self.flying_stage_moves(2)) == 0) or self.opp_pieces < 3:
-            return 1
-        if (self.agent_pieces_not_placed == 0 and self.agent_pieces > 3 and not len(self.legal_places_after(1)) != 0) \
-             or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
-            return 2
-        #if self.num_moves > 999999:
-        #    return -1
-        return 0
+# Function to place a player's piece on the board
+def place_piece(board, player, row, col):
+    board[row][col] = player.symbol
 
-    # makes a random agent turn
-    def agent_turn(self):
-        if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
-            legal = self.flying_stage_moves(1)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[1][rnd.randint(0, 1)]] = 0
-            self.board[random_move[1][0]][random_move[1][1]] = 1
-        if self.agent_pieces_not_placed == 0:
-            legal = self.legal_places_after(1)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
-            if len(random_move[1]):
-                temp_random = random_move[1][0]
-            else:
-                temp_random = random_move[1][rnd.randint(0, 1)]
-            self.board[temp_random[0], temp_random[1]] = 1
-        if self.agent_pieces_not_placed > 0:
-            legal = self.legal_places_before()
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0]][random_move[1]] = 1
-            self.agent_pieces_not_placed -= 1
-        if self.check_new_mills(1):
-            self.remove_opp_piece()
-        self.num_moves += 1
+# Function to remove a player's piece from the board
+def remove_piece(board, row, col):
+    board[row][col] = ' '
 
-    # remove random opponent's piece
-    def remove_opp_piece(self):
-        legal = self.black_places()
-        if len(legal) < 2:
-            random_remove = legal[0]
+# Function to check for a winner
+def check_winner(board):
+    for i in range(7):
+        if board[i][0] == board[i][1] == board[i][2] != ' ':
+            return board[i][0]
+        if board[0][i] == board[1][i] == board[2][i] != ' ':
+            return board[0][i]
+        if i == 0 or i == 3 or i == 6:
+            if board[i][0] == board[4][i] == board[8 - i][8 - i] != ' ':
+                return board[i][0]
+            if board[0][i] == board[i][4] == board[8 - i][8 - i] != ' ':
+                return board[0][i]
+    return None
+
+# Class to represent a player
+class Player:
+    def __init__(self, symbol):
+        self.symbol = symbol
+        self.pieces = []
+
+    def count_pieces(self):
+        return len(self.pieces)
+
+    def get_possible_moves(self, board):
+        possible_moves = []
+        for row in range(7):
+            for col in range(7):
+                if is_valid_move(board, self, row, col):
+                    possible_moves.append((row, col))
+        return possible_moves
+
+    def make_random_move(self, board):
+        possible_moves = self.get_possible_moves(board)
+        if possible_moves:
+            row, col = random.choice(possible_moves)
+            place_piece(board, self, row, col)
+            self.pieces.append((row, col))
+            return True
         else:
-            random_remove = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_remove[0]][random_remove[1]] = 0
-        self.opp_pieces -= 1
-        #print("********************************************************************************************************")
-        self.check_new_mills(2)
+            return False
 
-    # remove random agent's piece
-    def remove_agent_piece(self):
-        legal = self.white_places()
-        if len(legal) < 2:
-            random_remove = legal[0]
+# Main game loop
+player1 = Player(player1_symbol)
+player2 = Player(player2_symbol)
+current_player = player1
+
+while True:
+    print_board()
+
+    if not current_player.make_random_move(board):
+        print("Player", current_player.symbol, "has no valid moves.")
+        if current_player == player1:
+            current_player = player2
         else:
-            random_remove = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_remove[0]][random_remove[1]] = 0
-        self.agent_pieces -= 1
-        #print("********************************************************************************************************")
-        self.check_new_mills(1)
+            current_player = player1
+        continue
 
-    # makes a random opponent turn
-    def opp_turn(self):
-        if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
-            legal = self.flying_stage_moves(2)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
-            self.board[random_move[1][rnd.randint(0, 1)]] = 2
-        if self.opp_pieces_not_placed == 0:
-            legal = self.legal_places_after(2)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
-            if len(random_move[1]):
-                temp_random = random_move[1][0]
-            else:
-                temp_random = random_move[1][rnd.randint(0, 1)]
-            self.board[temp_random[0], temp_random[1]] = 2
-        if self.opp_pieces_not_placed > 0:
-            legal = self.legal_places_before()
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0]][random_move[1]] = 2
-            self.opp_pieces_not_placed -= 1
-        if self.check_new_mills(2):
-            self.remove_agent_piece()
-        self.num_moves += 1
+def main():
+    player1 = Player(player1_symbol)
+    player2 = Player(player2_symbol)
+    current_player = player1
 
+while True:
+    print_board()
 
-class Games:
-    def __init__(self):
-        self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1  # amount of games to run
-        self.white_wins = 0  # amount of wins for white
-        self.black_wins = 0  # amount of wins for black
+    if not current_player.make_random_move(board):
+        print("Player", current_player.symbol, "has no valid moves.")
+        if current_player == player1:
+            current_player = player2
+        else:
+            current_player = player1
+        continue
 
-    # play a single game of nine men's morris
-    def single_game(self):
-        while self.nmm.check_winner() == 0:
-            self.nmm.agent_turn()
-            #print(self.nmm.board)
-            #print(self.nmm.legal_places_after(2))
-            if self.nmm.check_winner() != 0:
-                break
-            self.nmm.opp_turn()
-            #print(self.nmm.board)
-        #print(self.nmm.legal_places_after(1))
-        print(self.nmm.board)
-        print(self.nmm.num_moves)
-        return self.nmm.check_winner()
+    winner = check_winner(board)
+    if winner:
+        print("Player", winner, "wins!")
+        break
 
-    # run a loop of the specified amount of games
-    def multiply_games(self):
-        for i in range(self.amount_games):
-            print(i+1)
-            game_result = self.single_game()
-            if game_result == 1:
-                self.white_wins += 1
-            elif game_result == 2:
-                self.black_wins += 1
-            self.nmm = Game_NineMensMorris()
+# Code to execute the game
+if __name__ == "__main__":
+    main()  # Call the main game loop
 
-
-run_games = Games()
-run_games.multiply_games()
-print("Wins for white:", run_games.white_wins)
-print("Wins for black:", run_games.black_wins)
-
-print(time.time() - start_time, "seconds")
+    # Announce the winner
+    winner = check_winner(board)
+    if winner == player1_symbol:
+        print("Black wins!")
+    elif winner == player2_symbol:
+        print("White wins!")
+    else:
+        print("It's a draw!")
