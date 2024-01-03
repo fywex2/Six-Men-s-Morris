@@ -306,6 +306,9 @@ class Games:
     def multiply_games(self):
         aggregated_dict = defaultdict(lambda: {'total_rank': 0, 'count': 0})
 
+        with open('GameData.json', 'r') as file:
+            existing_data = json.load(file)
+
         for i in range(self.amount_games):
             print(i + 1)
             game_result = self.single_game()
@@ -321,9 +324,6 @@ class Games:
                 aggregated_dict[board]['total_rank'] += rank
                 aggregated_dict[board]['count'] += 1
 
-            with open('GameData.json', 'r') as file:
-                existing_data = json.load(file)
-
             board_ranks = {**existing_data,
                            **{board: (data['total_rank'] / data['count'], data['count']) for board, data in
                               aggregated_dict.items()}}
@@ -334,10 +334,10 @@ class Games:
                     unique_dict[key] = value
             board_ranks = unique_dict
 
-            with open('GameData.json', 'w') as file:
-                json.dump(board_ranks, file, indent=4)
-
             self.nmm = Game_NineMensMorris()
+
+        with open('GameData.json', 'w') as file:
+            json.dump(board_ranks, file, indent=4)
 
         print("Wins for white:", run_games.white_wins)
         print("Wins for black:", run_games.black_wins)
