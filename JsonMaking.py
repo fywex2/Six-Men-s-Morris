@@ -306,11 +306,7 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-<<<<<<< Updated upstream
-        self.amount_games = 1000  # amount of games to run
-=======
-        self.amount_games = 10  # amount of games to run
->>>>>>> Stashed changes
+        self.amount_games = 100  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
 
