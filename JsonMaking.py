@@ -107,7 +107,7 @@ class Game_NineMensMorris:
         for i in range(5):
             for j in range(5):
                 if self.board[i][j] == player:
-                    adjacent_positions = self.possible_adj(i, j)
+                    adjacent_positions = self.possible_adj[i, j]
                     temp_moves = []
 
                     for position in adjacent_positions:
@@ -221,9 +221,33 @@ class Game_NineMensMorris:
             self.num_moves += 1
         self.num_moves += 1
 
+    def remove_pieces_in_mills(self, player):
+
+        pieces_to_remove = []
+        if player == 1:
+            for piece in self.white_places():
+                for mill in self.possible_mills:
+                    # Check if the black piece is in the current mill
+                    if piece in mill:
+                        # Check if all other pieces in the mill are also black
+                        if all(other_piece in self.white_places() for other_piece in mill):
+                            pieces_to_remove.append(piece)
+                            break  # No need to check other mills, already part of one
+            return [piece for piece in self.white_places() if piece not in pieces_to_remove]
+        else:
+            for piece in self.black_places():
+                for mill in self.possible_mills:
+                    # Check if the black piece is in the current mill
+                    if piece in mill:
+                        # Check if all other pieces in the mill are also black
+                        if all(other_piece in self.black_places() for other_piece in mill):
+                            pieces_to_remove.append(piece)
+                            break  # No need to check other mills, already part of one
+            return [piece for piece in self.black_places() if piece not in pieces_to_remove]
+
     # remove random opponent's piece
     def remove_opp_piece(self):
-        legal = self.black_places()
+        legal = self.remove_pieces_in_mills(2)
         if len(legal) < 2:
             random_remove = legal[0]
         else:
@@ -233,7 +257,7 @@ class Game_NineMensMorris:
 
     # remove random agent's piece
     def remove_agent_piece(self):
-        legal = self.white_places()
+        legal = self.remove_pieces_in_mills(1)
         if len(legal) < 2:
             random_remove = legal[0]
         else:
