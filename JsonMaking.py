@@ -5,6 +5,8 @@ import json
 from collections import defaultdict
 
 start_time = time.time()
+with open('GameData.json', 'r') as file:
+    existing_data = json.load(file)
 
 """
 creating the board itself when empty by 5x5 numpy array
@@ -78,6 +80,7 @@ class Game_NineMensMorris:
         self.state_scores = []  # collecting scores for each state in the game
         self.gama = 0.9  # amount to multiply the state every new board
         self.num_moves = 0
+        self.count_flying = 0
 
     def rank_board_state(self):
         rank = 10 * self.gama ** self.num_moves
@@ -132,7 +135,7 @@ class Game_NineMensMorris:
                         for y in range(5):
                             if self.board[x][y] == 0 and (i == x or j == y or abs(i - x) == abs(j - y)):
                                 moves_list.append(((i, j), (x, y)))
-        print("*")
+        self.count_flying+=1
         return moves_list
 
     # returns a list of where the white pieces are on the board
@@ -183,6 +186,52 @@ class Game_NineMensMorris:
         if self.num_moves > 99:
             return -1
         return 0
+
+    def smart_agent_turn(self):
+        boards_list = []
+        if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
+            for i in range(len(self.board)):
+                if self.board[i] == '1':
+                    temp_board = self.board[:i] + '0' + self.board[i + 1:]
+                    for j in range(len(temp_board)):
+                        if temp_board[j] == '0':
+                            new_board = temp_board[:j] + '1' + temp_board[j + 1:]
+                            boards_list.append(new_board)
+        if self.agent_pieces_not_placed == 0:
+            for position, adjacent_positions in self.possible_adj.items():
+                if self.board[position[0] * 5 + position[1]] == '1':
+                    for adj_pos in adjacent_positions:
+                        if self.board[adj_pos[0] * 5 + adj_pos[1]] == '0':
+                            temp_board = self.board[:position[0] * 5 + position[1]] + '0' + self.board[
+                                                                                            position[0] * 5 + position[
+                                                                                                1] + 1:]
+                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + '1' + temp_board[
+                                                                                         adj_pos[0] * 5 + adj_pos[
+                                                                                             1] + 1:]
+                            boards_list.append(new_board)
+        if self.agent_pieces_not_placed > 0:
+            for i in range(len(self.board)):
+                if self.board[i] == '0':
+                    new_board = self.board[:i] + '1' + self.board[i + 1:]
+                    boards_list.append(new_board)
+            self.agent_pieces_not_placed -= 1
+        self.rank_board_state()
+        if self.check_new_mills(1):
+            for i in range(len(self.board)):
+                if self.board[i] == '2':
+                    new_board = self.board[:i] + '0' + self.board[i + 1:]
+                    boards_list.append(new_board)
+            self.rank_board_state()
+            self.num_moves += 1
+        self.num_moves += 1
+        best_board = None
+        best_rank = float('-inf')
+
+        for variation in boards_list:
+            rank, _ = existing_data.get(variation, [0, 0])
+            if rank > best_rank:
+                best_rank = rank
+                best_board = variation
 
     # makes a random agent turn
     def agent_turn(self):
@@ -248,6 +297,8 @@ class Game_NineMensMorris:
     # remove random opponent's piece
     def remove_opp_piece(self):
         legal = self.remove_pieces_in_mills(2)
+        if len(legal) == 0:
+            return
         if len(legal) < 2:
             random_remove = legal[0]
         else:
@@ -258,6 +309,8 @@ class Game_NineMensMorris:
     # remove random agent's piece
     def remove_agent_piece(self):
         legal = self.remove_pieces_in_mills(1)
+        if len(legal) == 0:
+            return
         if len(legal) < 2:
             random_remove = legal[0]
         else:
@@ -306,14 +359,15 @@ class Game_NineMensMorris:
 class Games:
     def __init__(self):
         self.nmm = Game_NineMensMorris()  # object of the nine men's morris
-        self.amount_games = 1000  # amount of games to run
+        self.amount_games = 100  # amount of games to run
         self.white_wins = 0  # amount of wins for white
         self.black_wins = 0  # amount of wins for black
+        self.count_flying = 0
 
     # play a single game of nine men's morris
     def single_game(self):
         while self.nmm.check_winner() == 0:
-            self.nmm.agent_turn()
+            self.nmm.smart_agent_turn()
             #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
@@ -321,14 +375,12 @@ class Games:
             #print(self.nmm.board)
         #print(self.nmm.board)
         #print(self.nmm.num_moves)
+        self.count_flying+=self.nmm.count_flying
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
     def multiply_games(self):
         aggregated_dict = defaultdict(lambda: {'total_rank': 0, 'count': 0})
-
-        with open('GameData.json', 'r') as file:
-            existing_data = json.load(file)
 
         for i in range(self.amount_games):
             print(i + 1)
@@ -357,11 +409,12 @@ class Games:
 
             self.nmm = Game_NineMensMorris()
 
-        with open('GameData.json', 'w') as file:
-            json.dump(board_ranks, file, indent=4)
+        #with open('GameData.json', 'w') as file:
+        #    json.dump(board_ranks, file, indent=4)
 
         print("Wins for white:", run_games.white_wins)
         print("Wins for black:", run_games.black_wins)
+        print(self.count_flying)
 
         print(time.time() - start_time, "seconds")
 
