@@ -189,51 +189,69 @@ class Game_NineMensMorris:
 
     def smart_agent_turn(self):
         boards_list = []
+        flattened_board = [str(item) for row in self.board for item in row]
+
         if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
-            for i in range(len(self.board)):
-                if self.board[i] == '1':
-                    temp_board = self.board[:i] + '0' + self.board[i + 1:]
+            for i in range(len(flattened_board)):
+                if flattened_board[i] == '1':
+                    temp_board = flattened_board[:i] + ['0'] + flattened_board[i + 1:]
                     for j in range(len(temp_board)):
                         if temp_board[j] == '0':
-                            new_board = temp_board[:j] + '1' + temp_board[j + 1:]
+                            new_board = temp_board[:j] + ['1'] + temp_board[j + 1:]
+                            # Convert flattened board back to 2D representation
                             boards_list.append(new_board)
+
         if self.agent_pieces_not_placed == 0:
             for position, adjacent_positions in self.possible_adj.items():
-                if self.board[position[0] * 5 + position[1]] == '1':
+                if flattened_board[position[0] * 5 + position[1]] == '1':
                     for adj_pos in adjacent_positions:
-                        if self.board[adj_pos[0] * 5 + adj_pos[1]] == '0':
-                            temp_board = self.board[:position[0] * 5 + position[1]] + '0' + self.board[
-                                                                                            position[0] * 5 + position[
-                                                                                                1] + 1:]
-                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + '1' + temp_board[
+                        if flattened_board[adj_pos[0] * 5 + adj_pos[1]] == '0':
+                            temp_board = flattened_board[:position[0] * 5 + position[1]] + ['0'] + flattened_board[
+                                                                                                 position[0] * 5 +
+                                                                                                 position[1] + ['1']:]
+                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + ['1'] + temp_board[
                                                                                          adj_pos[0] * 5 + adj_pos[
-                                                                                             1] + 1:]
-                            boards_list.append(new_board)
+                                                                                             1] + ['1']:]
+                            # Convert flattened board back to 2D representation
+                            boards_list.append(''.join(new_board))
+
         if self.agent_pieces_not_placed > 0:
-            for i in range(len(self.board)):
-                if self.board[i] == '0':
-                    new_board = self.board[:i] + '1' + self.board[i + 1:]
-                    boards_list.append(new_board)
+            for i in range(25):
+                if flattened_board[i] == '0':
+                    new_board = flattened_board[:i] + ['1'] + flattened_board[i + 1:]
+                    # Convert the list back to a string before appending
+                    boards_list.append(''.join(new_board))
             self.agent_pieces_not_placed -= 1
-        self.rank_board_state()
-        if self.check_new_mills(1):
-            for i in range(len(self.board)):
-                if self.board[i] == '2':
-                    new_board = self.board[:i] + '0' + self.board[i + 1:]
-                    boards_list.append(new_board)
-            self.rank_board_state()
-            self.num_moves += 1
-        self.num_moves += 1
-        best_board = None
-        best_rank = float('-inf')
-        print(boards_list)
+
+        best_rank = -11
+        best_board = 0
         for variation in boards_list:
             rank, _ = existing_data.get(variation, [0, 0])
             if rank > best_rank:
                 best_rank = rank
                 best_board = variation
-        print(best_board)
         self.board = [[best_board[row * 5 + col] for col in range(5)] for row in range(5)]
+        self.rank_board_state()
+
+        if self.check_new_mills(1):
+            for i in range(len(flattened_board)):
+                if flattened_board[i] == '2':
+                    new_board = flattened_board[:i] + ['0'] + flattened_board[i + 1:]
+                    boards_list.append(new_board)
+
+            self.rank_board_state()
+            self.num_moves += 1
+
+        self.num_moves += 1
+        best_rank = -11
+        best_board = 0
+        for variation in boards_list:
+            rank, _ = existing_data.get(variation, [0, 0])
+            if rank > best_rank:
+                best_rank = rank
+                best_board = variation
+        self.board = [[best_board[row * 5 + col] for col in range(5)] for row in range(5)]
+        print(self.board)
 
     # makes a random agent turn
     def agent_turn(self):
@@ -344,7 +362,9 @@ class Game_NineMensMorris:
             self.board[temp_random[0]][temp_random[1]] = 2
         if self.opp_pieces_not_placed > 0:
             legal = self.legal_places_before()
+
             if len(legal) < 2:
+                print(legal)
                 random_move = legal[0]
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
