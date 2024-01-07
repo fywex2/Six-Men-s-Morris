@@ -199,7 +199,7 @@ class Game_NineMensMorris:
                         if temp_board[j] == '0':
                             new_board = temp_board[:j] + ['1'] + temp_board[j + 1:]
                             # Convert flattened board back to 2D representation
-                            boards_list.append(new_board)
+                            boards_list.append(''.join(new_board))
 
         if self.agent_pieces_not_placed == 0:
             for position, adjacent_positions in self.possible_adj.items():
@@ -222,31 +222,38 @@ class Game_NineMensMorris:
         best_rank = -11
         best_board = 0
         for variation in boards_list:
+            if not(variation in existing_data):
+                self.agent_turn()
+                return
             rank, _ = existing_data.get(variation, [0, 0])
             if rank > best_rank:
                 best_rank = rank
                 best_board = variation
-        self.board = [[best_board[row * 5 + col] for col in range(5)] for row in range(5)]
+        self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
         self.rank_board_state()
 
         if self.check_new_mills(1):
             for i in range(len(flattened_board)):
                 if flattened_board[i] == '2':
                     new_board = flattened_board[:i] + ['0'] + flattened_board[i + 1:]
-                    boards_list.append(new_board)
+                    boards_list.append(''.join(new_board))
 
             self.rank_board_state()
             self.num_moves += 1
 
-        self.num_moves += 1
-        best_rank = -11
-        best_board = 0
-        for variation in boards_list:
-            rank, _ = existing_data.get(variation, [0, 0])
-            if rank > best_rank:
-                best_rank = rank
-                best_board = variation
-        self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
+            self.num_moves += 1
+            best_rank = -11
+            best_board = 0
+            for variation in boards_list:
+                if not(variation in existing_data):
+                    self.remove_opp_piece()
+                    self.rank_board_state()
+                    return
+                rank, _ = existing_data.get(variation, [0, 0])
+                if rank > best_rank:
+                    best_rank = rank
+                    best_board = variation
+            self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
 
     # makes a random agent turn
     def agent_turn(self):
@@ -383,7 +390,7 @@ class Games:
     # play a single game of nine men's morris
     def single_game(self):
         while self.nmm.check_winner() == 0:
-            self.nmm.agent_turn()
+            self.nmm.smart_agent_turn()
             #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
