@@ -206,12 +206,8 @@ class Game_NineMensMorris:
                 if flattened_board[position[0] * 5 + position[1]] == '1':
                     for adj_pos in adjacent_positions:
                         if flattened_board[adj_pos[0] * 5 + adj_pos[1]] == '0':
-                            temp_board = flattened_board[:position[0] * 5 + position[1]] + ['0'] + flattened_board[
-                                                                                                 position[0] * 5 +
-                                                                                                 position[1] + ['1']:]
-                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + ['1'] + temp_board[
-                                                                                         adj_pos[0] * 5 + adj_pos[
-                                                                                             1] + ['1']:]
+                            temp_board = flattened_board[:position[0] * 5 + position[1]] + ['0'] + flattened_board[position[0] * 5 + position[1] + 1:]
+                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + ['1'] + temp_board[adj_pos[0] * 5 + adj_pos[1] + 1:]
                             # Convert flattened board back to 2D representation
                             boards_list.append(''.join(new_board))
 
@@ -250,8 +246,7 @@ class Game_NineMensMorris:
             if rank > best_rank:
                 best_rank = rank
                 best_board = variation
-        self.board = [[best_board[row * 5 + col] for col in range(5)] for row in range(5)]
-        print(self.board)
+        self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
 
     # makes a random agent turn
     def agent_turn(self):
@@ -364,7 +359,6 @@ class Game_NineMensMorris:
             legal = self.legal_places_before()
 
             if len(legal) < 2:
-                print(legal)
                 random_move = legal[0]
             else:
                 random_move = legal[rnd.randint(0, len(legal) - 1)]
@@ -389,7 +383,7 @@ class Games:
     # play a single game of nine men's morris
     def single_game(self):
         while self.nmm.check_winner() == 0:
-            self.nmm.smart_agent_turn()
+            self.nmm.agent_turn()
             #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
