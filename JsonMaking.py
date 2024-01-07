@@ -396,9 +396,7 @@ class Games:
                 break
             self.nmm.opp_turn()
             #print(self.nmm.board)
-        #print(self.nmm.board)
         #print(self.nmm.num_moves)
-        self.count_flying+=self.nmm.count_flying
         return self.nmm.check_winner()
 
     # run a loop of the specified amount of games
@@ -411,6 +409,7 @@ class Games:
             while game_result == -1:
                 self.nmm = Game_NineMensMorris()
                 game_result = self.single_game()
+            #print(self.nmm.board)
             if game_result == 1:
                 self.white_wins += 1
             elif game_result == 2:
