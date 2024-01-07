@@ -226,12 +226,14 @@ class Game_NineMensMorris:
         self.num_moves += 1
         best_board = None
         best_rank = float('-inf')
-
+        print(boards_list)
         for variation in boards_list:
             rank, _ = existing_data.get(variation, [0, 0])
             if rank > best_rank:
                 best_rank = rank
                 best_board = variation
+        print(best_board)
+        self.board = [[best_board[row * 5 + col] for col in range(5)] for row in range(5)]
 
     # makes a random agent turn
     def agent_turn(self):
