@@ -431,8 +431,8 @@ class Games:
 
             self.nmm = Game_NineMensMorris()
 
-        #with open('GameData.json', 'w') as file:
-        #    json.dump(board_ranks, file, indent=4)
+        with open('GameData.json', 'w') as file:
+            json.dump(board_ranks, file, indent=4)
 
         print("Wins for white:", run_games.white_wins)
         print("Wins for black:", run_games.black_wins)
