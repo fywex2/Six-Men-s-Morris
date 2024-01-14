@@ -18,13 +18,7 @@ creating the board itself when empty by 5x5 numpy array
 
 class Game_NineMensMorris:
     def __init__(self):
-        self.board = [
-            [0, 9, 0, 9, 0],
-            [9, 0, 0, 0, 9],
-            [0, 0, 9, 0, 0],
-            [9, 0, 0, 0, 9],
-            [0, 9, 0, 9, 0]
-        ]
+        self.board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.agent_pieces = 6  # the amount of total pieces of the agent
         self.opp_pieces = 6  # the amount of total pieces of the opponent
         self.agent_pieces_not_placed = 6  # the amount of pieces that wasn't place on the board of the agent
@@ -33,46 +27,34 @@ class Game_NineMensMorris:
         self.black_mills = 0  # black mills on the board
         self.possible_mills = [
             # Horizontal mills on the first row
-            [[0, 0], [0, 1], [0, 2]],
-            [[0, 2], [1, 2], [2, 2]],
-            [[2, 2], [2, 1], [2, 0]],
-            [[2, 0], [1, 0], [0, 0]],
+            [[0], [1], [2]],
+            [[3], [4], [5]],
+            [[10], [11], [12]],
+            [[13], [14], [15]],
 
             # Horizontal mills on the second row
-            [[0, 2], [0, 3], [0, 4]],
-            [[0, 4], [1, 4], [2, 4]],
-            [[2, 4], [2, 3], [2, 2]],
-            [[2, 2], [1, 2], [0, 2]],
-
-            # Horizontal mills on the third row
-            [[1, 1], [1, 2], [1, 3]],
-            [[1, 3], [2, 3], [3, 3]],
-            [[3, 3], [3, 2], [3, 1]],
-            [[3, 1], [2, 1], [1, 1]],
-
-            # Vertical mills on the first column
-            [[0, 1], [0, 3], [0, 4]],
-            [[1, 2], [1, 3], [1, 4]],
-            [[2, 1], [2, 3], [2, 4]],
-            [[1, 0], [1, 2], [1, 4]]
+            [[0], [6], [13]],
+            [[3], [7], [10]],
+            [[5], [8], [12]],
+            [[2], [9], [15]]
         ]
         self.possible_adj = {
-            (0, 0): [(0, 2), (2, 0)],
-            (0, 2): [(0, 0), (0, 4), (1, 2)],
-            (0, 4): [(2, 4), (0, 2)],
-            (1, 1): [(1, 2), (2, 1)],
-            (1, 2): [(1, 1), (1, 3), (0, 2)],
-            (1, 3): [(1, 2), (2, 3)],
-            (2, 0): [(0, 0), (4, 0), (2, 1)],
-            (2, 1): [(2, 0), (1, 1), (3, 1)],
-            (2, 3): [(2, 4), (1, 3), (3, 3)],
-            (2, 4): [(0, 4), (4, 4), (2, 3)],
-            (3, 1): [(2, 1), (3, 2)],
-            (3, 2): [(4, 2), (3, 1), (3, 3)],
-            (3, 3): [(3, 2), (2, 3)],
-            (4, 0): [(2, 0), (4, 2)],
-            (4, 2): [(3, 2), (4, 0), (4, 4)],
-            (4, 4): [(4, 2), (2, 4)]
+            0: [1, 6],
+            1: [0, 2, 4],
+            2: [1, 9],
+            3: [4, 7],
+            4: [1, 3, 5],
+            5: [4, 8],
+            6: [0, 13, 7],
+            7: [3, 10, 6],
+            8: [9, 5, 12],
+            9: [8, 2, 15],
+            10: [7, 11],
+            11: [14, 10, 12],
+            12: [8, 11],
+            13: [6, 14],
+            14: [13, 15, 11],
+            15: [14, 9]
         }
         self.win_points_agent = 10  # points for the win of agent
         self.loss_points_agent = 0  # points for a loss of agent
@@ -90,162 +72,136 @@ class Game_NineMensMorris:
             rank = self.loss_points_agent
 
         rank = float(rank)
-
-        flattened_board = [element for sublist in self.board for element in sublist]
-        self.states.append(''.join(map(str, flattened_board)))
+        self.states.append(''.join(map(str, self.board)))
         self.state_scores.append(rank)
 
     # returns a list of where pieces could be placed
     def legal_places_before(self):
-        moves_list = []
-        for i in range(5):
-            for j in range(5):
-                if self.board[i][j] == 0:
-                    moves_list.append((i, j))
-        return moves_list
+        return [i for i in range(16) if self.board[i] == 0]
 
     # returns a list of where pieces could be moved to after all the pieces of the player where put on the board
     def legal_places_after(self, player):
         moves_list = []
-        for i in range(5):
-            for j in range(5):
-                if self.board[i][j] == player:
-                    adjacent_positions = self.possible_adj[i, j]
-                    temp_moves = []
+        for i in range(16):
+            if self.board[i] == player:
+                adjacent_positions = self.possible_adj[i]
+                temp_moves = []
 
-                    for position in adjacent_positions:
-                        x, y = position
-                        if self.board[x][y] == 0:
-                            temp_moves.append(position)
+                for position in adjacent_positions:
+                    x = position
+                    if self.board[x] == 0:
+                        temp_moves.append(x)
+                if not temp_moves:
+                    continue
 
-                    if len(temp_moves) == 0:
-                        continue
-
-                    moves_list.append([(i, j), temp_moves])
+                moves_list.append([i, temp_moves])
 
         return moves_list
 
     # returns a list of where pieces could be moved when there are 3 pieces left on the board (flying stage)
     def flying_stage_moves(self, player):
         moves_list = []
-        for i in range(5):
-            for j in range(5):
-                if self.board[i][j] == player:
-                    for x in range(5):
-                        for y in range(5):
-                            if self.board[x][y] == 0 and (i == x or j == y or abs(i - x) == abs(j - y)):
-                                moves_list.append(((i, j), (x, y)))
-        self.count_flying+=1
+        for i in range(16):
+            if self.board[i] == player:
+                moves_list.extend(
+                    (i, x)
+                    for x in range(16)
+                    if self.board[x] == 0 and (i == x or abs(i - x))
+                )
+        self.count_flying += 1
         return moves_list
 
     # returns a list of where the white pieces are on the board
     def white_places(self):
-        white_locations = []
-        for i in range(5):
-            for j in range(5):
-                if self.board[i][j] == 1:
-                    white_locations.append((i, j))
-        return white_locations
+        return [i for i in range(16) if self.board[i] == 1]
 
     # returns a list of where the black pieces are on the board
     def black_places(self):
-        black_locations = []
-        for i in range(5):
-            for j in range(5):
-                if self.board[i][j] == 2:
-                    black_locations.append((i, j))
-        return black_locations
+        return [i for i in range(16) if self.board[i] == 2]
 
     # checks if there is a new line of 3 pieces of the selected player
     def check_new_mills(self, player):
         count = 0
 
         for mill in self.possible_mills:
-            if self.board[mill[0][0]][mill[0][1]] == self.board[mill[1][0]][mill[1][1]] == self.board[mill[2][0]][mill[2][1]] == player:
+            if self.board[mill[0][0]] == self.board[mill[1][0]] == self.board[mill[2][0]] == player:
                 count += 1
+                if (player == 1 and count > self.white_mills) or (player == 2 and count > self.black_mills):
+                    break
         if player == 1:
-            prev = self.white_mills
-            if count > prev:
+            if count > self.white_mills:
                 self.white_mills = count
                 return True
-        if player == 2:
-            prev = self.black_mills
-            if count > prev:
-                self.black_mills = count
-                return True
+        elif count > self.black_mills:
+            self.black_mills = count
+            return True
         return False
 
     # return 1 if white won 2 if black won 0 if no one won
     def check_winner(self):
         if (self.opp_pieces_not_placed == 0 and self.opp_pieces > 3 and len(self.legal_places_after(2)) == 0) \
-             or (self.opp_pieces == 3 and len(self.flying_stage_moves(2)) == 0) or self.opp_pieces < 3:
+                 or (self.opp_pieces == 3 and len(self.flying_stage_moves(2)) == 0) or self.opp_pieces < 3:
             return 1
         if (self.agent_pieces_not_placed == 0 and self.agent_pieces > 3 and len(self.legal_places_after(1)) == 0) \
-             or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
+                 or (self.agent_pieces == 3 and len(self.flying_stage_moves(1)) == 0) or self.agent_pieces < 3:
             return 2
-        if self.num_moves > 99:
-            return -1
-        return 0
+        return -1 if self.num_moves > 99 else 0
 
     def smart_agent_turn(self):
         boards_list = []
-        flattened_board = [str(item) for row in self.board for item in row]
 
         if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
-            for i in range(len(flattened_board)):
-                if flattened_board[i] == '1':
-                    temp_board = flattened_board[:i] + ['0'] + flattened_board[i + 1:]
-                    for j in range(len(temp_board)):
-                        if temp_board[j] == '0':
-                            new_board = temp_board[:j] + ['1'] + temp_board[j + 1:]
-                            # Convert flattened board back to 2D representation
-                            boards_list.append(''.join(new_board))
+            boards_list.extend(
+                ''.join(['0' if x == i else '1' if x == j else str(x) for x in self.board])
+                for i, x in enumerate(self.board)
+                if x == 1
+                for j in range(len(self.board))
+                if self.board[j] == 0
+            )
 
         if self.agent_pieces_not_placed == 0:
-            for position, adjacent_positions in self.possible_adj.items():
-                if flattened_board[position[0] * 5 + position[1]] == '1':
-                    for adj_pos in adjacent_positions:
-                        if flattened_board[adj_pos[0] * 5 + adj_pos[1]] == '0':
-                            temp_board = flattened_board[:position[0] * 5 + position[1]] + ['0'] + flattened_board[position[0] * 5 + position[1] + 1:]
-                            new_board = temp_board[:adj_pos[0] * 5 + adj_pos[1]] + ['1'] + temp_board[adj_pos[0] * 5 + adj_pos[1] + 1:]
-                            # Convert flattened board back to 2D representation
-                            boards_list.append(''.join(new_board))
+            boards_list.extend(
+                ''.join(['0' if x == i else '1' if x == j else str(x) for x in self.board])
+                for i, x in enumerate(self.board)
+                if x == 1
+                for adj_pos in self.possible_adj[i]
+                if self.board[adj_pos] == 0
+            )
 
         if self.agent_pieces_not_placed > 0:
-            for i in range(25):
-                if flattened_board[i] == '0':
-                    new_board = flattened_board[:i] + ['1'] + flattened_board[i + 1:]
-                    # Convert the list back to a string before appending
-                    boards_list.append(''.join(new_board))
+            boards_list.extend(
+                ''.join(['0' if x == i else '1' if x == j else str(x) for x in self.board])
+                for i in range(16)
+                if self.board[i] == 0
+            )
             self.agent_pieces_not_placed -= 1
 
         best_rank = -11
         best_board = 0
         for variation in boards_list:
-            if not(variation in existing_data):
+            if variation not in existing_data:
                 self.agent_turn()
                 return
             rank, _ = existing_data.get(variation, [0, 0])
             if rank > best_rank:
                 best_rank = rank
                 best_board = variation
-        self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
+        self.board = [int(x) for x in best_board]
         self.rank_board_state()
 
         if self.check_new_mills(1):
-            for i in range(len(flattened_board)):
-                if flattened_board[i] == '2':
-                    new_board = flattened_board[:i] + ['0'] + flattened_board[i + 1:]
-                    boards_list.append(''.join(new_board))
+            for i, x in enumerate(best_board):
+                if x == '2':
+                    new_board = f'{best_board[:i]}0{best_board[i + 1:]}'
+                    boards_list.append(new_board)
 
             self.rank_board_state()
             self.num_moves += 1
 
-            self.num_moves += 1
             best_rank = -11
             best_board = 0
             for variation in boards_list:
-                if not(variation in existing_data):
+                if variation not in existing_data:
                     self.remove_opp_piece()
                     self.rank_board_state()
                     return
@@ -253,37 +209,28 @@ class Game_NineMensMorris:
                 if rank > best_rank:
                     best_rank = rank
                     best_board = variation
-            self.board = [[int(best_board[row * 5 + col]) for col in range(5)] for row in range(5)]
+            self.board = [int(x) for x in best_board]
 
     # makes a random agent turn
     def agent_turn(self):
         if self.agent_pieces == 3 and self.agent_pieces_not_placed == 0:
             legal = self.flying_stage_moves(1)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
             self.board[random_move[1][rnd.randint(0, 1)]] = 0
             self.board[random_move[1][0]][random_move[1][1]] = 1
         if self.agent_pieces_not_placed == 0:
             legal = self.legal_places_after(1)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
+            self.board[random_move[0]] = 0
             if len(random_move[1]):
                 temp_random = random_move[1][0]
             else:
                 temp_random = random_move[1][rnd.randint(0, 1)]
-            self.board[temp_random[0]][temp_random[1]] = 1
+            self.board[temp_random] = 1
         if self.agent_pieces_not_placed > 0:
             legal = self.legal_places_before()
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0]][random_move[1]] = 1
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
+            self.board[random_move] = 1
             self.agent_pieces_not_placed -= 1
         self.rank_board_state()
         if self.check_new_mills(1):
@@ -299,21 +246,17 @@ class Game_NineMensMorris:
             for piece in self.white_places():
                 for mill in self.possible_mills:
                     # Check if the black piece is in the current mill
-                    if piece in mill:
-                        # Check if all other pieces in the mill are also black
-                        if all(other_piece in self.white_places() for other_piece in mill):
-                            pieces_to_remove.append(piece)
-                            break  # No need to check other mills, already part of one
+                    if piece in mill and all(other_piece in self.white_places() for other_piece in mill):
+                        pieces_to_remove.append(piece)
+                        break
             return [piece for piece in self.white_places() if piece not in pieces_to_remove]
         else:
             for piece in self.black_places():
                 for mill in self.possible_mills:
                     # Check if the black piece is in the current mill
-                    if piece in mill:
-                        # Check if all other pieces in the mill are also black
-                        if all(other_piece in self.black_places() for other_piece in mill):
-                            pieces_to_remove.append(piece)
-                            break  # No need to check other mills, already part of one
+                    if piece in mill and all(other_piece in self.black_places() for other_piece in mill):
+                        pieces_to_remove.append(piece)
+                        break
             return [piece for piece in self.black_places() if piece not in pieces_to_remove]
 
     # remove random opponent's piece
@@ -321,11 +264,8 @@ class Game_NineMensMorris:
         legal = self.remove_pieces_in_mills(2)
         if len(legal) == 0:
             return
-        if len(legal) < 2:
-            random_remove = legal[0]
-        else:
-            random_remove = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_remove[0]][random_remove[1]] = 0
+        random_remove = legal[0] if len(legal) < 2 else rnd.choice(legal)
+        self.board[random_remove] = 0
         self.opp_pieces -= 1
 
     # remove random agent's piece
@@ -333,43 +273,31 @@ class Game_NineMensMorris:
         legal = self.remove_pieces_in_mills(1)
         if len(legal) == 0:
             return
-        if len(legal) < 2:
-            random_remove = legal[0]
-        else:
-            random_remove = legal[rnd.randint(0, len(legal) - 1)]
-        self.board[random_remove[0]][random_remove[1]] = 0
+        random_remove = legal[0] if len(legal) < 2 else rnd.choice(legal)
+        self.board[random_remove] = 0
         self.agent_pieces -= 1
 
     # makes a random opponent turn
     def opp_turn(self):
         if self.opp_pieces == 3 and self.opp_pieces_not_placed == 0:
             legal = self.flying_stage_moves(2)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
+            self.board[random_move[0]] = 0
             self.board[random_move[1][rnd.randint(0, 1)]] = 2
         if self.opp_pieces_not_placed == 0:
             legal = self.legal_places_after(2)
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0][0]][random_move[0][1]] = 0
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
+            self.board[random_move[0]] = 0
             if len(random_move[1]):
                 temp_random = random_move[1][0]
             else:
                 temp_random = random_move[1][rnd.randint(0, 1)]
-            self.board[temp_random[0]][temp_random[1]] = 2
+            self.board[temp_random] = 2
         if self.opp_pieces_not_placed > 0:
             legal = self.legal_places_before()
 
-            if len(legal) < 2:
-                random_move = legal[0]
-            else:
-                random_move = legal[rnd.randint(0, len(legal) - 1)]
-            self.board[random_move[0]][random_move[1]] = 2
+            random_move = legal[0] if len(legal) < 2 else rnd.choice(legal)
+            self.board[random_move] = 2
             self.opp_pieces_not_placed -= 1
         self.rank_board_state()
         if self.check_new_mills(2):
@@ -390,7 +318,7 @@ class Games:
     # play a single game of nine men's morris
     def single_game(self):
         while self.nmm.check_winner() == 0:
-            self.nmm.smart_agent_turn()
+            self.nmm.agent_turn()
             #print(self.nmm.board)
             if self.nmm.check_winner() != 0:
                 break
@@ -404,12 +332,13 @@ class Games:
         aggregated_dict = defaultdict(lambda: {'total_rank': 0, 'count': 0})
 
         for i in range(self.amount_games):
-            print(i + 1)
+            if i % 10 == 0:
+                print(i)
             game_result = self.single_game()
             while game_result == -1:
                 self.nmm = Game_NineMensMorris()
                 game_result = self.single_game()
-            #print(self.nmm.board)
+            #print(self.nmm.num_moves)
             if game_result == 1:
                 self.white_wins += 1
             elif game_result == 2:
@@ -425,14 +354,15 @@ class Games:
 
             unique_dict = {}
             for key, value in board_ranks.items():
+
                 if key not in unique_dict:
                     unique_dict[key] = value
             board_ranks = unique_dict
 
             self.nmm = Game_NineMensMorris()
 
-        #with open('GameData.json', 'w') as file:
-        #    json.dump(board_ranks, file, indent=4)
+        with open('GameData.json', 'w') as file:
+            json.dump(board_ranks, file, indent=4)
 
         print("Wins for white:", run_games.white_wins)
         print("Wins for black:", run_games.black_wins)
